@@ -1,10 +1,8 @@
 %%%-------------------------------------------------------------------
-%%% @author a2l <a2l@ultramonkey2>
-%%% @copyright (C) 2012, a2l
+%%% @author karl l <karl@ninjacontrol.com>
 %%% @doc
 %%%
 %%% @end
-%%% Created : 15 Jul 2012 by a2l <a2l@ultramonkey2>
 %%%-------------------------------------------------------------------
 -module(kjell_profile_SUITE).
 
