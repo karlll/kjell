@@ -29,6 +29,7 @@
 -export([prompt_func/1]).
 
 -define(VERSION,"0.1").
+-define(BANNER,"Kjell v." ++ ?VERSION).
 
 -define(LINEMAX, 30).
 -define(CHAR_MAX, 60).
@@ -175,6 +176,7 @@ server(NoCtrlG, StartSync) ->
 -spec server(boolean()) -> 'terminated'.
 
 server(StartSync) ->
+
     case init:get_argument(async_shell_start) of
 	{ok,_} -> 
 	    ok;					% no sync with init
@@ -199,7 +201,6 @@ server(StartSync) ->
 				 Bs0, default_packages()),
 		     default_modules()),
     
-    io_srv:start_link(kio),
     %% io:fwrite("Imported modules: ~p.\n", [erl_eval:bindings(Bs)]),
 
     %% Use an Ets table for record definitions. It takes too long to
@@ -226,9 +227,9 @@ server(StartSync) ->
 
     case get(no_control_g) of
 	true ->
-	    io:fwrite(kio, <<"~s\n">>,[banner(no_control_g)]);
+	    io:fwrite(<<"~s\n">>,[banner(no_control_g)]);
 	_undefined_or_false ->
-	    io:fwrite(kio, <<"~s\n">>,[banner()])
+	    io:fwrite(<<"~s\n">>,[banner()])
 		      
     end,
     erase(no_control_g),
@@ -248,7 +249,7 @@ server(StartSync) ->
     server_loop(0, start_eval(Bs, RT, []), Bs, RT, [], History, Results).
 
 banner() ->
-    "kjell v. " ++ ?VERSION.
+   ?BANNER.
 banner(no_control_g) ->
     banner() ++ "(abort with ^G)".
 
