@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
 %%% @author karl l <karl@ninjacontrol.com>
 %%% @doc
-%%%
+%%%   
 %%% @end
 %%%-------------------------------------------------------------------
 -module(start_kjell).
@@ -32,7 +32,7 @@ config(get_cfg) ->
 	    case get_cfg_file(CfgDir) of
 		{ok,CfgFile} ->
 		    %% start profile
-		    config(get_ext_dir,CfgDir)
+		    config(get_ext_dir,CfgDir);
 	        {error,not_found} ->
 		    case create_default_cfg_file(CfgDir) of
 			ok -> 

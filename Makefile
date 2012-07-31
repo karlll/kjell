@@ -1,4 +1,4 @@
-REBAR = ./rebar
+REBAR = rebar
 
 all: compile
 test: compile ct
