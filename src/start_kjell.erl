@@ -31,12 +31,16 @@ config(get_cfg) ->
 	{ok,CfgDir} ->
 	    case get_cfg_file(CfgDir) of
 		{ok,CfgFile} ->
-		    %% start profile
+		    kjell_profile:start_link(),
+		    Cfg = filename:join(CfgDir,CfgFile),
+		    ok = kjell_profile:load_profile(Cfg),
 		    config(get_ext_dir,CfgDir);
 	        {error,not_found} ->
 		    case create_default_cfg_file(CfgDir) of
 			ok -> 
-	    		    %% start profile
+	    		    kjell_profile:start_link(),
+			    Cfg = filename:join(CfgDir,?CFG_FILE),
+			    ok = kjell_profile:load_profile(Cfg),
 			    config(get_ext_dir,CfgDir);
 			{error,Reason} ->
 			    {error,Reason}
@@ -62,13 +66,16 @@ config(get_ext_dir,CfgDir) ->
     case filelib:is_dir(ExtDir) of
 	true ->
 	    %% start extension handler
+	    ok = kjell_extension:init_extensions(ExtDir),
 	    ok;
 	false ->
 	    % creating default ext dir
 	    case create_default_ext_dir(CfgDir) of
 		{ok,NewExtDir} ->
 		    %% start extension handler
+		    ok = kjell_extension:init_extensions(NewExtDir),
 		    %% update configuration
+		    ok = kjell_profile:set_value(ext_dir,NewExtDir),
 		    ok;
 		{error,Reason} ->
 		    {error,Reason}
@@ -122,7 +129,7 @@ get_cfg_dir() ->
 	    end;
 			
 	{error, Reason} ->
-	    Msg = io_lib:format("Error in path = ~s : ~s",[CfgDir,Reason]), 
+	    Msg = io_lib:format("Error in path = ~s : ~s~n",[CfgDir,Reason]), 
 	    {error,Msg}
     end.
 		      
@@ -158,11 +165,11 @@ create_default_cfg_file(Path)->
 		    ok
 	    catch
 		Class:Reason ->
-		    Msg = io_lib:format("Error writing default config file : ~p : ~p",[Class,Reason]),
+		    Msg = io_lib:format("Error writing default config file : ~p : ~p~n",[Class,Reason]),
 		    {error,lists:flatten(Msg)}
 	    end;
 	{error,Reason} ->
-	       Msg = io_lib:format("Error opening default config file : ~p",[Reason]),
+	       Msg = io_lib:format("Error opening default config file : ~p~n",[Reason]),
 	       {error,lists:flatten(Msg)}
     end.
 
@@ -176,12 +183,12 @@ create_default_ext_dir(Path)->
 		{error,eexist} ->
 		    {ok, ExtPath}; % already exists
 		{error, Reason} ->
-		    Msg = io_lib:format("Error creating extension dir = ~s : ~s",[ExtPath,Reason]), 
+		    Msg = io_lib:format("Error creating extension dir = ~s : ~s~n",[ExtPath,Reason]), 
 		    {error,Msg}
 	    end;
 			
 	{error, Reason} ->
-	    Msg = io_lib:format("Error in path = ~s : ~s",[ExtPath,Reason]), 
+	    Msg = io_lib:format("Error in path = ~s : ~s~n",[ExtPath,Reason]), 
 	    {error,Msg}
     end.
 
@@ -197,11 +204,11 @@ create_default_colprof(Path)->
 		    ok
 	    catch
 		Class:Reason ->
-		    Msg = io_lib:format("Error writing default color profile : ~p : ~p",[Class,Reason]),
+		    Msg = io_lib:format("Error writing default color profile : ~p : ~p~n",[Class,Reason]),
 		    {error,lists:flatten(Msg)}
 	    end;
 	{error,Reason} ->
-	       Msg = io_lib:format("Error opening default color profile : ~p",[Reason]),
+	       Msg = io_lib:format("Error opening default color profile : ~p~n",[Reason]),
 	       {error,lists:flatten(Msg)}
     end.
 

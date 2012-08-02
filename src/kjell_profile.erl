@@ -122,7 +122,7 @@ handle_call({load_profile, File}, _From, State) when is_list(File) ->
 				     {ok,ColTerms} ->
 					 format_strs(ColTerms);
 				     {error,Reason} ->
-					 io:format("Error reading color profile ~p: ~p",[ColProfFile,Reason]),
+					 io:format("Error reading color profile ~p: ~p~n",[ColProfFile,Reason]),
 					 format_strs(default_colors(ansi)) % error,  use default color profile
 				 end
 			 end,
@@ -130,7 +130,7 @@ handle_call({load_profile, File}, _From, State) when is_list(File) ->
 	    {reply, ok, State#state{settings=[{text_attr,TxtFmtStrs}|Terms]}};
 
 	{error,Reason} ->
-	    io:format("Error loading profile ~p: ~p ",[File,Reason]),
+	    io:format("Error loading profile ~p: ~p ~n",[File,Reason]),
 	    default_profile(State)
     end;
 

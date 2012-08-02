@@ -53,7 +53,7 @@ get_modules(Path)->
 load_extensions(Path) ->
     case get_modules(Path) of
 	{error,Reason} ->
-	    io:format("No extensions loaded. Error while reading directory ~p: \"~p\"",[Path,Reason]),
+	    io:format("No extensions loaded. Error while reading directory ~p: \"~p\"~n",[Path,Reason]),
 	    {ok, []};
 	{ok,FileList} ->
 						% Compile the files
@@ -62,12 +62,12 @@ load_extensions(Path) ->
 					      {ok,ExtModule} ->
 						  ExtModule;
 					      {error,Error} ->
-						  io:format("Error while compiling ~p (~p).",[File,Error]),
+						  io:format("Error while compiling ~p (~p).~n",[File,Error]),
 						  none
 					  end
 				  end, FileList),
 						% Select valid extensions
-	    io:format("DEBUG : Adding code path = ~p",[Path]),
+	    io:format("DEBUG : Adding code path = ~p~n",[Path]),
 	    true = code:add_patha(Path),
 	    ExtList = lists:filter(fun(CompdItem) -> 
 					   case CompdItem  of
@@ -151,7 +151,7 @@ init_extensions(ExtensionPath)->
 	{ok, Exts} ->
 	    ok = register_extensions(Exts);
 	_Other ->
-	    io:format("No extensions loaded.")
+	    io:format("No extensions loaded.~n")
     end,
     ok.
 
