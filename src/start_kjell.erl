@@ -34,14 +34,18 @@ config(get_cfg) ->
 		    kjell_profile:start_link(),
 		    Cfg = filename:join(CfgDir,CfgFile),
 		    ok = kjell_profile:load_profile(Cfg),
+		    ok = kjell_profile:set_value(cfg_dir,CfgDir),
 		    config(get_ext_dir,CfgDir);
 	        {error,not_found} ->
 		    case create_default_cfg_file(CfgDir) of
 			ok -> 
 	    		    kjell_profile:start_link(),
 			    Cfg = filename:join(CfgDir,?CFG_FILE),
+			    create_default_colprof(CfgDir),
 			    ok = kjell_profile:load_profile(Cfg),
+			    ok = kjell_profile:set_value(cfg_dir,CfgDir),
 			    config(get_ext_dir,CfgDir);
+
 			{error,Reason} ->
 			    {error,Reason}
 		    end
@@ -80,7 +84,7 @@ config(get_ext_dir,CfgDir) ->
 		{error,Reason} ->
 		    {error,Reason}
 	    end
-     end.
+    end.
 
 
 get_cfg_file(CfgDir) ->
@@ -133,27 +137,6 @@ get_cfg_dir() ->
 	    {error,Msg}
     end.
 		      
-				       
-%% default_cfg(Path)->				       
-%%     case create_default_cfg_file(Path) of
-%% 	ok ->
-%% 	    case create_default_ext_dir(Path) of
-%% 		ok ->
-%% 		    case create_default_colprof(Path) of
-%% 			ok ->
-%% 			    ok;
-%% 			{error,Reason} ->
-%% 			    Msg = io_lib:format("Error creating color profile : %s",[Reason]),
-%% 			    {Error,Msg}
-%% 		    end;
-%% 		{error,Reason} ->
-%% 		    Msg = io_lib:format("Error creating default extension dir : %s",[Reason]),
-%% 		    {Error,Msg}
-%% 	    end;
-%% 	{error,Reason} ->
-%% 	    Msg = io_lib:format("Error creating default config file : %s",[Reason]),
-%% 	    {Error,Msg}
-%%     end.
 
 create_default_cfg_file(Path)->	        
     CfgFile = filename:join(Path,?CFG_FILE),
