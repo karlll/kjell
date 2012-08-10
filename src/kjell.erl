@@ -257,11 +257,13 @@ server_loop(N0, Eval_0, Bs00, RT, Ds00, History0, Results0) ->
     N = N0 + 1,
     {Eval_1,Bs0,Ds0,Prompt} = prompt(N, Eval_0, Bs00, RT, Ds00),
     {Res,Eval0} = get_command(Prompt, Eval_1, Bs0, RT, Ds0),
+   
     case Res of 
 	{ok,Es0,_EndLine} ->
             case expand_hist(Es0, N) of
                 {ok,Es} ->
                     {V,Eval,Bs,Ds} = shell_cmd(Es, Eval0, Bs0, RT, Ds0, cmd),
+		    
                     {History,Results} = check_and_get_history_and_results(),
                     add_cmd(N, Es, V),
                     HB1 = del_cmd(command, N - History, N - History0, false),
@@ -1440,7 +1442,7 @@ get_history_and_results() ->
     {History, erlang:min(Results, History)}.
 
 pp(V, I, RT) ->
-    io_lib_pretty:print(V, I, columns(), ?LINEMAX, ?CHAR_MAX,
+    k_io_lib_pretty:print(V, I, columns(), ?LINEMAX, ?CHAR_MAX,
                         record_print_fun(RT)).
 
 columns() ->

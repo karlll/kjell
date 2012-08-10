@@ -16,7 +16,7 @@
 %% 
 %% %CopyrightEnd%
 %%
--module(user_drv).
+-module(k_user_drv).
 
 %% Basic interface to a port.
 
@@ -45,20 +45,20 @@
 -spec start() -> pid().
 
 start() ->					%Default line editing shell
-    spawn(user_drv, server, ['tty_sl -c -e',{shell,start,[init]}]).
+    spawn(k_user_drv, server, ['tty_sl -c -e',{shell,start,[init]}]).
 
 start([Pname]) ->
-    spawn(user_drv, server, [Pname,{shell,start,[init]}]);
+    spawn(k_user_drv, server, [Pname,{shell,start,[init]}]);
 start([Pname|Args]) ->
-    spawn(user_drv, server, [Pname|Args]);
+    spawn(k_user_drv, server, [Pname|Args]);
 start(Pname) ->
-    spawn(user_drv, server, [Pname,{shell,start,[init]}]).
+    spawn(k_user_drv, server, [Pname,{shell,start,[init]}]).
 
 start(Pname, Shell) ->
-    spawn(user_drv, server, [Pname,Shell]).
+    spawn(k_user_drv, server, [Pname,Shell]).
 
 start(Iname, Oname, Shell) ->
-    spawn(user_drv, server, [Iname,Oname,Shell]).
+    spawn(k_user_drv, server, [Iname,Oname,Shell]).
 
 
 %% Return the pid of the active group process.
@@ -119,10 +119,10 @@ server1(Iport, Oport, Shell) ->
 	    {ok,[[Node]]} ->
 		ANode = list_to_atom(Node),
 		RShell = {ANode,shell,start,[]},
-		RGr = group:start(self(), RShell, rem_sh_opts(ANode)),
+		RGr = k_group:start(self(), RShell, rem_sh_opts(ANode)),
 		{RGr,RShell};
 	    E when E =:= error ; E =:= {ok,[[]]} ->
-		{group:start(self(), Shell),Shell}
+		{k_group:start(self(), Shell),Shell}
 	end,
 
     put(current_group, Curr),
@@ -151,7 +151,7 @@ start_user() ->
     end,
     case whereis(user) of
 	undefined ->
-	    User = group:start(self(), {}),
+	    User = k_group:start(self(), {}),
 	    register(user, User),
 	    User;
 	User ->
@@ -359,7 +359,7 @@ switch_cmd({ok,[{atom,_,j}],_}, Iport, Oport, Gr) ->
     io_requests(gr_list(Gr), Iport, Oport),
     switch_loop(Iport, Oport, Gr);
 switch_cmd({ok,[{atom,_,s},{atom,_,Shell}],_}, Iport, Oport, Gr0) ->
-    Pid = group:start(self(), {Shell,start,[]}),
+    Pid = k_group:start(self(), {Shell,start,[]}),
     Gr = gr_add_cur(Gr0, Pid, {Shell,start,[]}),
     switch_loop(Iport, Oport, Gr);
 switch_cmd({ok,[{atom,_,s}],_}, Iport, Oport, Gr0) ->
@@ -383,7 +383,7 @@ switch_cmd({ok,[{atom,_,r},{atom,_,Node}],_}, Iport, Oport, Gr0) ->
     switch_loop(Iport, Oport, Gr);
 switch_cmd({ok,[{atom,_,r},{atom,_,Node},{atom,_,Shell}],_},
 	   Iport, Oport, Gr0) ->
-    Pid = group:start(self(), {Node,Shell,start,[]}),
+    Pid = k_group:start(self(), {Node,Shell,start,[]}),
     Gr = gr_add_cur(Gr0, Pid, {Node,Shell,start,[]}),
     switch_loop(Iport, Oport, Gr);
 switch_cmd({ok,[{atom,_,q}],_}, Iport, Oport, Gr) ->
@@ -490,10 +490,22 @@ set_unicode_state(Iport, Bool) ->
 %% io_requests(Requests, InPort, OutPort)
 
 io_request({put_chars, unicode,Cs}, _Iport, Oport) ->
-    Oport ! {self(),{command,[?OP_PUTC|unicode:characters_to_binary(Cs,utf8)]}};
+     Cs2 = case Cs of
+     	      <<"1"/utf8>> -> flatten(io_lib:format("\e[4;31m~ts\e[0m",[Cs]));
+     	      <<"2"/utf8>> -> flatten(io_lib:format("\e[4;31m~ts\e[0m",[Cs]));
+     	      <<"3"/utf8>> -> flatten(io_lib:format("\e[4;31m~ts\e[0m",[Cs]));
+     	      <<"123"/utf8>> -> flatten(io_lib:format("\e[4;31m~ts\e[0m",[Cs]));
+
+
+     	      _ -> Cs
+     	  end,
+    %%Cs2 = flatten(io_lib:format("\e[4;31m~ts\e[0m",[Cs])),
+    %io:format("o"),
+    Oport ! {self(),{command,[?OP_PUTC|unicode:characters_to_binary(Cs2,utf8)]}};
 io_request({move_rel,N}, _Iport, Oport) ->
     Oport ! {self(),{command,[?OP_MOVE|put_int16(N, [])]}};
 io_request({insert_chars,unicode,Cs}, _Iport, Oport) ->
+    %Cs2 = flatten(io_lib:format("## ~s",[Cs])),
     Oport ! {self(),{command,[?OP_INSC|unicode:characters_to_binary(Cs,utf8)]}};
 io_request({delete_chars,N}, _Iport, Oport) ->
     Oport ! {self(),{command,[?OP_DELC|put_int16(N, [])]}};
