@@ -7,6 +7,7 @@
 -module(kjell_profile).
 
 -compile([export_all]).
+-include("kjell.hrl").
 
 -behaviour(gen_server).
 
@@ -248,15 +249,7 @@ format_strs(TextAttrs) ->
 
 
 default_colors(ansi)->
-    [ 
-      %% { class, {text_attrib, foreground, background}}
-      {string,{bright,yellow,none}},
-      {digits,{bright,green,none}},
-      {keyword,{bright,magenta,none}},
-      {warning,{dim,red,none}},
-      {error,{underscore,red,none}},
-      {term,{bright,cyan,none}}
-    ].
+    ?DEFAULT_COLORS.
     
 default_profile(State) ->
     TxtFmtStrs = format_strs(default_colors(ansi)),
