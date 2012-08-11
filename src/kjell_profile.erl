@@ -19,8 +19,12 @@
 
 -define(SERVER, ?MODULE). 
 
--record(state, {text_attr = [],
+-record(state, {text_attr = [], %% TODO: remove?
 	       settings = []}).
+
+%% flags
+
+-define(FLAG_NO_COLOR, no_color). 
 
 %%%===================================================================
 %%% API
@@ -138,12 +142,18 @@ handle_call({load_profile, default}, _From, State) ->
     default_profile(State);
 
 handle_call({q_str,Class,Str}, _From, State) ->
+    DisableFlag = proplists:get_value(?FLAG_NO_COLOR,State#state.settings),
     TxtAttr = proplists:get_value(text_attr,State#state.settings),
-    Res = case proplists:get_value(Class,TxtAttr) of
-	      undefined ->
-		  undefined;
-	      FmtStr ->
-		  lists:flatten(io_lib:format(FmtStr,[Str]))
+    Res = case DisableFlag of 
+	      true ->
+		  Str;
+	      _ ->
+		  case proplists:get_value(Class,TxtAttr) of
+		      undefined ->
+			  undefined;
+		      FmtStr ->
+			  lists:flatten(io_lib:format(FmtStr,[Str]))
+		  end
 	  end,
     {reply, {ok, Res}, State};
 
