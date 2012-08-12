@@ -4,6 +4,9 @@
 %%% @end
 
 
+-define(VERSION,"0.1").
+-define(BANNER,"Kjell v." ++ ?VERSION).
+
 -define(DEFAULT_COLORS,
     [ 
       %% Text classes 
@@ -18,6 +21,7 @@
       {record_name,{none,magenta,none}},
       {record_field,{none,blue,none}},
       {function,{none,magenta,none}},
+      {prompt,{none,green,none}},
 
       %% Character colors
 
