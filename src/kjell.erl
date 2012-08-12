@@ -22,14 +22,15 @@
 %%
 -module(kjell).
 
+-include("kjell.hrl").
+-import(kjell_profile,[q/2]).
+
 -export([start/0, start/1, start/2, server/1, server/2, history/1, results/1]).
 -export([whereis_evaluator/0, whereis_evaluator/1]).
 -export([start_restricted/1, stop_restricted/0]).
 -export([local_allowed/3, non_local_allowed/3]).
 -export([prompt_func/1]).
 
--define(VERSION,"0.1").
--define(BANNER,"Kjell v." ++ ?VERSION).
 
 -define(LINEMAX, 30).
 -define(CHAR_MAX, 60).
@@ -359,8 +360,10 @@ default_prompt(N) ->
     %% Don't bother flattening the list irrespective of what the
     %% I/O-protocol states.
     case is_alive() of
-	true  -> io_lib:format(<<"(~s)~w> ">>, [node(), N]);
-	false -> io_lib:format(<<"~w> ">>, [N])
+	true  -> P = io_lib:format(<<"(~s)~w> ">>, [node(), N]),
+		 q(prompt,P);
+	false -> P = io_lib:format(<<"~w> ">>, [N]),
+		 q(prompt,P)
     end.
 
 %% expand_hist(Expressions, CommandNumber)
@@ -899,8 +902,10 @@ not_restricted(_, _) ->
 apply_fun({erlang,garbage_collect}, [], Shell) ->
     garb(Shell);
 apply_fun({M,F}, As, _Shell) ->
+    io:format("Apply {M,F}, As = ~p~n", [{M,F,As}]), %% TODO: remove
     apply(M, F, As);
 apply_fun(MForFun, As, _Shell) ->
+    io:format("Apply {MForFun, As} = ~p~n", [{MForFun,As}]), %% TODO: remove
     apply(MForFun, As).
 
 prep_check({call,Line,{atom,_,f},[{var,_,_Name}]}) ->
@@ -1006,7 +1011,7 @@ local_func(rp, [A], Bs0, _Shell, RT, Lf, Ef) ->
     {[V],Bs} = expr_list([A], Bs0, Lf, Ef),
     W = columns(),
     io:requests([{put_chars, 
-                  io_lib_pretty:print(V, 1, W, -1, ?CHAR_MAX,
+                  k_io_lib_pretty:print(V, 1, W, -1, ?CHAR_MAX,
                                       record_print_fun(RT))},
                  nl]),
     {value,ok,Bs};
@@ -1095,7 +1100,7 @@ shell_default(F,As,Bs) ->
 	{module, _} ->
 	    case erlang:function_exported(M,F,A) of
 		true ->
-		    {eval,{M,F},As,Bs};		    
+		    {eval,fun M:F/A,As,Bs};
 		false ->
 		    shell_undef(F,A)
 	    end;
@@ -1107,9 +1112,10 @@ shell_undef(F,A) ->
     erlang:error({shell_undef,F,A}).
 
 local_func_handler(Shell, RT, Ef) ->
+
     H = fun(Lf) -> 
                 fun(F, As, Bs) -> 
-                        local_func(F, As, Bs, Shell, RT, {eval,Lf(Lf)}, Ef) 
+			local_func(F, As, Bs, Shell, RT, {eval,Lf(Lf)}, Ef) 
                 end
           end,
     {eval,H(H)}.
