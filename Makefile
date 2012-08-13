@@ -10,7 +10,7 @@ test: compile ct
 
 deps:
 	mkdir -p $(CUSTOM_OTP_DIR)
-	git clone -b $(CUSTOM_OTP_BRANCH) $(CUSTOM_OTP_DIR)
+	git clone -b $(CUSTOM_OTP_BRANCH) $(CUSTOM_OTP_REPO) $(CUSTOM_OTP_DIR)
 	cd $(CUSTOM_OTP_DIR); \
 	$(OTP_BUILD_CMD)
 
