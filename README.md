@@ -1,7 +1,9 @@
 kjell
 =====
 
-Erlang Shell
+A Refurbished Erlang Shell
+
+See [https://karlll.github.com/kjell]
 
 ## Build
 ~~~
@@ -20,3 +22,7 @@ Erlang Shell
 ~~~
   bin/kjell
 ~~~
+
+## Author
+
+karlll <karl@ninjacontrol.com>
