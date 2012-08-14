@@ -902,10 +902,8 @@ not_restricted(_, _) ->
 apply_fun({erlang,garbage_collect}, [], Shell) ->
     garb(Shell);
 apply_fun({M,F}, As, _Shell) ->
-    io:format("Apply {M,F}, As = ~p~n", [{M,F,As}]), %% TODO: remove
     apply(M, F, As);
 apply_fun(MForFun, As, _Shell) ->
-    io:format("Apply {MForFun, As} = ~p~n", [{MForFun,As}]), %% TODO: remove
     apply(MForFun, As).
 
 prep_check({call,Line,{atom,_,f},[{var,_,_Name}]}) ->
@@ -974,7 +972,7 @@ local_func(f, [], _Bs, _Shell, _RT, _Lf, _Ef) ->
 local_func(f, [{var,_,Name}], Bs, _Shell, _RT, _Lf, _Ef) ->
     {value,ok,erl_eval:del_binding(Name, Bs)};
 local_func(f, [_Other], _Bs, _Shell, _RT, _Lf, _Ef) ->
-    erlang:raise(error, function_clause, [{shell,f,1}]);
+    erlang:raise(error, function_clause, [{kjell,f,1}]);
 local_func(rd, [{atom,_,RecName},RecDef0], Bs, _Shell, RT, _Lf, _Ef) ->
     RecDef = expand_value(RecDef0),
     RDs = lists:flatten(erl_pp:expr(RecDef)),
@@ -989,7 +987,7 @@ local_func(rd, [{atom,_,RecName},RecDef0], Bs, _Shell, RT, _Lf, _Ef) ->
             exit(lists:flatten(ErrStr))
     end;
 local_func(rd, [_,_], _Bs, _Shell, _RT, _Lf, _Ef) ->
-    erlang:raise(error, function_clause, [{shell,rd,2}]);
+    erlang:raise(error, function_clause, [{kjell,rd,2}]);
 local_func(rf, [], Bs, _Shell, RT, _Lf, _Ef) ->
     true = ets:delete_all_objects(RT),
     {value,initiate_records(Bs, RT),Bs};
@@ -1032,10 +1030,10 @@ local_func(which, [{atom,_,M}], Bs, _Shell, _RT, _Lf, _Ef) ->
 	    {value,M,Bs}
     end;
 local_func(which, [_Other], _Bs, _Shell, _RT, _Lf, _Ef) ->
-    erlang:raise(error, function_clause, [{shell,which,1}]);
+    erlang:raise(error, function_clause, [{kjell,which,1}]);
 local_func(import, [M], Bs, _Shell, _RT, _Lf, _Ef) ->
     case erl_parse:package_segments(M) of
-	error -> erlang:raise(error, function_clause, [{shell,import,1}]);
+	error -> erlang:raise(error, function_clause, [{kjell,import,1}]);
 	M1 ->
 	    Mod = packages:concat(M1),
 	    case packages:is_valid(Mod) of
@@ -1044,12 +1042,12 @@ local_func(import, [M], Bs, _Shell, _RT, _Lf, _Ef) ->
 		    Mod1 = list_to_atom(Mod),
 		    {value,ok,erl_eval:add_binding({module,Key}, Mod1, Bs)};
 		false ->
-		    exit({{bad_module_name, Mod}, [{shell,import,1}]})
+		    exit({{bad_module_name, Mod}, [{kjell,import,1}]})
 	    end
     end;
 local_func(import_all, [P], Bs0, _Shell, _RT, _Lf, _Ef) ->
     case erl_parse:package_segments(P) of
-	error -> erlang:raise(error, function_clause, [{shell,import_all,1}]);
+	error -> erlang:raise(error, function_clause, [{kjell,import_all,1}]);
 	P1 ->
 	    Name = packages:concat(P1),
 	    case packages:is_valid(Name) of
@@ -1058,7 +1056,7 @@ local_func(import_all, [P], Bs0, _Shell, _RT, _Lf, _Ef) ->
 		    {value,ok,Bs1};
 		false ->
 		    exit({{bad_package_name, Name},
-			  [{shell,import_all,1}]})
+			  [{kjell,import_all,1}]})
 	    end
     end;
 local_func(use, [M], Bs, Shell, RT, Lf, Ef) ->
@@ -1068,16 +1066,16 @@ local_func(use_all, [M], Bs, Shell, RT, Lf, Ef) ->
 local_func(history, [{integer,_,N}], Bs, _Shell, _RT, _Lf, _Ef) ->
     {value,history(N),Bs};
 local_func(history, [_Other], _Bs, _Shell, _RT, _Lf, _Ef) ->
-    erlang:raise(error, function_clause, [{shell,history,1}]);
+    erlang:raise(error, function_clause, [{kjell,history,1}]);
 local_func(results, [{integer,_,N}], Bs, _Shell, _RT, _Lf, _Ef) ->
     {value,results(N),Bs};
 local_func(results, [_Other], _Bs, _Shell, _RT, _Lf, _Ef) ->
-    erlang:raise(error, function_clause, [{shell,results,1}]);
+    erlang:raise(error, function_clause, [{kjell,results,1}]);
 local_func(catch_exception, [{atom,_,Bool}], Bs, _Shell, _RT, _Lf, _Ef) 
                              when Bool; not Bool ->
     {value,catch_exception(Bool),Bs};
 local_func(catch_exception, [_Other], _Bs, _Shell, _RT, _Lf, _Ef) ->
-    erlang:raise(error, function_clause, [{shell,catch_exception,1}]);
+    erlang:raise(error, function_clause, [{kjell,catch_exception,1}]);
 local_func(exit, [], _Bs, Shell, _RT, _Lf, _Ef) ->
     shell_req(Shell, exit),			%This terminates us
     exit(normal);
@@ -1088,7 +1086,7 @@ local_func(F, As0, Bs0, _Shell, _RT, Lf, Ef) when is_atom(F) ->
 non_builtin_local_func(F,As,Bs) ->
     case erlang:function_exported(user_default, F, length(As)) of
 	true ->
-            {eval,{user_default,F},As,Bs};
+            {eval,erlang:make_fun(user_default,F,length(As)),As,Bs};
 	false ->
 	    shell_default(F,As,Bs)
     end.
@@ -1100,13 +1098,16 @@ shell_default(F,As,Bs) ->
 	{module, _} ->
 	    case erlang:function_exported(M,F,A) of
 		true ->
-		    {eval,fun M:F/A,As,Bs};
+		    {eval,erlang:make_fun(M,F,A),As,Bs};
 		false ->
 		    shell_undef(F,A)
 	    end;
 	{error, _} ->
 	    shell_undef(F,A)
     end.
+
+kjell_extension(F,As,Bs) ->
+    ok.
 
 shell_undef(F,A) ->
     erlang:error({shell_undef,F,A}).
