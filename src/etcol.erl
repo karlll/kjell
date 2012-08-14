@@ -9,7 +9,7 @@
 -define(ANSI_CTRL_CHARS,"\e[").
 -define(ANSI_CLEAR,"\e[0m").
 
--export([t/1,test/0]).
+-export([t/1,test/0, fg/0]).
 
 -export([text_attr/2,fg_color/2,bg_color/2]).
 
@@ -64,6 +64,43 @@ bg_color(ansi,white) ->  "47".
 
 
 % ****************************************************************
+
+fg() ->
+
+    Colors = [ black, red, green, yellow, blue, magenta, cyan, white ],
+
+
+    Disp = fun(Fg) ->
+		   {[{fg_color,Fg}], lists:concat([atom_to_list(Fg), 
+						   ?ANSI_CLEAR, "\n"])}
+	   end,
+
+    AllCombosAttr = lists:map(Disp,Colors),
+    AllCombosStr = t_a(AllCombosAttr),
+    io:format("~s",[AllCombosStr]),
+    exit(normal).
+
+
+fg_attrs() ->
+
+    Colors = [ black, red, green, yellow, blue, magenta, cyan, white ],
+    Attrs = [ bright, dim, underscore, blink, reverse, hidden ],
+
+    AllCombos = [ {A,F} || A <- Attrs, F <- Colors ],
+
+    Disp = fun(AttrTuple) ->
+		   {Attr,Fg} = AttrTuple,
+		   {[{text_attr,Attr},
+		     {fg_color,Fg}], lists:concat([atom_to_list(Fg), 
+						   " (",
+						   atom_to_list(Attr),
+						   ")", ?ANSI_CLEAR, "\n"])}
+	   end,
+
+    AllCombosAttr = lists:map(Disp,AllCombos),
+    AllCombosStr = t_a(AllCombosAttr),
+    io:format("~s",[AllCombosStr]),
+    exit(normal).
 
 test() ->
 

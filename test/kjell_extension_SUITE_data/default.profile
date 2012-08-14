@@ -5,3 +5,4 @@
 {warning,{dim,red,none}}.
 {error,{underscore,red,none}}.
 {term,{bright,cyan,none}}.
+
