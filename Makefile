@@ -1,4 +1,4 @@
-REBAR = rebar
+REBAR = ./rebar
 CUSTOM_OTP_REPO = https://github.com/karlll/otp.git
 CUSTOM_OTP_DIR = deps/otp-custom_ttsl_drv
 CUSTOM_OTP_BRANCH = esc_ttsl_drv
