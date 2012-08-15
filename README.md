@@ -3,26 +3,26 @@ kjell
 
 A Refurbished Erlang Shell
 
-See [https://karlll.github.com/kjell]
+See http://karlll.github.com/kjell/
 
 ## Build
 ~~~
-  git clone https://github.com/karlll/kjell.git
+  $ git clone https://github.com/karlll/kjell.git
 ~~~  
 ### Get and build dependencies
 ~~~
-  cd kjell
-  make deps
+  $ cd kjell
+  $ make deps
 ~~~  
 ### Build kjell
 ~~~
-  make
+  $ make
 ~~~  
 ## Run
 ~~~
-  bin/kjell
+  $ bin/kjell
 ~~~
 
 ## Author
 
-karlll <karl@ninjacontrol.com>
+karlll, <karl@ninjacontrol.com>
