@@ -90,57 +90,102 @@ load_extensions(Path) ->
     end.
 
 register_extensions(ExtList) ->
-    register_extensions(ExtList,[],[]).
 
 register_extensions([ExtMod|T],ExtPtRegister,ExtModDescList) ->
-    ExtendsData = apply(ExtMod,extends,[]),
-    {ExtModDesc,ExtsList} = ExtendsData,
-
-    NewRegTmp = lists:map(fun(P) -> 
-				  {Point,ModFun,ExtPointDesc} = P,
-				  case proplists:get_value(Point,ExtPtRegister) of
-				      undefined -> %add new
-					  {Point,{ModFun,ExtPointDesc}};
-				      OldVal -> % add to existing
-					  {Point,{[{ModFun,ExtPointDesc},OldVal]}}
-				  end 
-			  end, ExtsList),
-    NR_Keys = proplists:get_keys(NewRegTmp),
-    R_Keys = proplists:get_keys(ExtPtRegister),
-						% Get all keys from R not in NR
-    SubR = sets:subtract(sets:from_list(R_Keys),sets:from_list(NR_Keys)),
-    SubRegister = [ {K,proplists:get_value(K,ExtPtRegister)} || K <- sets:to_list(SubR) ],
-    NewRegister = lists:concat([NewRegTmp,SubRegister]),
-    register_extensions(T,NewRegister,[ExtModDesc|ExtModDescList]);
+     ExtendsData = apply(ExtMod,extends,[]),
+     {ExtModDesc,ExtsList} = ExtendsData,
+    NewExtPtRegister = lists:concat([ExtsList,ExtPtRegister]),
+    register_extensions(T,NewExtPtRegister,[ExtModDesc|ExtModDescList]);
 
 register_extensions([],ExtPtRegister,ExtModDescList) ->
+    CExtPtRegister = compact_lst(ExtPtRegister),
     ets:new(ext_pts,[named_table]),
     ets:new(ext_desc,[named_table]),
     lists:map(fun(Pt) -> {P,ExtMods} = Pt,
 			 io:format("Inserting P = ~p , ExtMods = ~p~n",[P,ExtMods]),
 			 ets:insert_new(ext_pts,{P,ExtMods})
-	      end, ExtPtRegister),
+	      end, CExtPtRegister),
     ets:insert_new(ext_desc,{loaded_exts,ExtModDescList}),
     ok.
 
 
+get_cmd_ext(Cmd) ->
+    Commands = ets:lookup(ext_pts,command),
+    case Commands of
+	[] ->
+	    undefined;
+	List when is_list(List) ->
+	    
+	    {command,Extensions} = hd(List),
+	    case Extensions of
+		T when is_tuple(T) ->
+		    {{ExtMod,Fun},_} = T,
+		    case Fun of
+			Cmd ->
+			    T;
+			_ -> undefined
+		    end;
+		L when is_list(L) ->
+		    Filter = fun({{ExtMod,Fun}, _}) ->
+				     case Fun of
+					 Cmd ->
+					     true;
+					 _ ->
+					     false
+				     end
+			     end,
+		    Cs = lists:filter(Filter,Extensions),
+		    case Cs of
+			[] ->
+			    undefined;
+			_ ->
+			    Cs
+		    end
+	    end
+		       
+    end.
+	 
+			     
+
+activate({command,Cmd},InData)->
+    Command = get_cmd_ext(Cmd),
+    case Command of
+	undefined ->
+	    {error, undefined};
+        CmdModFuns ->
+	    apply_extension({command,CmdModFuns},InData)
+    end;
 
 activate(ExtPoint,InData)->
     Extensions = ets:lookup(ext_pts,ExtPoint),
-    case point_type(ExtPoint) of
-	single ->
-	    apply_extension(hd(Extensions),InData);
-	multiple ->
-	    apply_extensions(Extensions,InData);
-	none ->
-	    InData
+    case Extensions of 
+	[] ->
+	    InData;
+	Extensions ->
+	    case point_type(ExtPoint) of
+		single ->
+		    apply_extension(hd(Extensions),InData);
+		multiple ->
+		    apply_extensions(hd(Extensions),InData);
+		none ->
+		    InData
+	    end
     end.
 
 
-apply_extension(Extension,InData)->							
-    {ExtPt,{{ExtMod,Fun}, Desc}} = Extension,
-    {ok, Res} = apply(ExtMod,Fun,[InData]),
+
+
+
+apply_extension({ExtPt,Exts},InData) when is_tuple(Exts) ->
+    {{M,F},Desc} = Exts,
+    Res = apply(M,F,[InData]),
+    Res;
+
+apply_extension({ExtPt,Exts},InData) when is_list(Exts) ->
+    {{M,F},Desc} = hd(Exts),
+    Res = apply(M,F,[InData]),
     Res.
+
 
 apply_extensions(Extensions,InData)->								 
    InData. %% todo
@@ -160,11 +205,23 @@ init_extensions(ExtensionPath)->
 
 point_type(shell_input_line) ->	single;
 point_type(shell_output_line) -> single;
-point_type(command) -> multiple;
 point_type(Other) -> none.
 
 
-t() ->
-    A = load_extensions("."),
-    B = register_extensions(A),
-    ok.
+
+%% Transform list 
+%% from [{A,B,C},{A,D,E}] -> [{A,[{B,C},{D,E}]}]
+compact_lst(Lst) ->
+    compact_lst(Lst,[]).
+compact_lst([{Tag,ItemA,ItemB}|T],Acc) ->
+    case lists:flatten(proplists:get_all_values(Tag,Acc)) of
+	[] ->
+	    compact_lst(T,[{Tag,{ItemA,ItemB}}|Acc]);
+	L ->
+	    compact_lst(T,[ {Tag,[{ItemA,ItemB}|L]}|proplists:delete(Tag,Acc)])
+    end;
+compact_lst([],Acc) ->
+    lists:reverse(Acc).
+
+	    
+    

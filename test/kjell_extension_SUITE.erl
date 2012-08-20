@@ -106,7 +106,9 @@ groups() ->
 all() -> 
     [load_extension,
      activate_ext_point,
-     non_registered_ext_point].
+     non_registered_ext_point,
+     cmd_ok,
+     cmd_error].
 
 %%--------------------------------------------------------------------
 %% @spec TestCase() -> Info
@@ -142,7 +144,7 @@ activate_ext_point(Config) ->
     ok = load_exts(DataDir),
 
     ExpectedStr = "(output) Extension got : test\n",
-    OutStr = kjell_extension:activate(shell_output_line,"test"),
+    {ok, OutStr} = kjell_extension:activate(shell_output_line,"test"),
     ct:pal("Got result = ~p",[OutStr]),
     true = string:equal(ExpectedStr, OutStr),
     kjell_profile:stop(),
@@ -163,6 +165,35 @@ non_registered_ext_point(Config) ->
     kjell_profile:stop(),
     ok.
 
+cmd_ok() ->
+    [].
+
+cmd_ok(Config) ->
+    kjell_profile:start_link(),
+    DataDir = proplists:get_value(data_dir,Config),
+    ExpectedStr = "(cmd) Extension got : \"test\"\n",
+    ok = load_exts(DataDir),
+    {ok,OutStr} = kjell_extension:activate({command,cmd},"test"),
+    ct:pal("Got result = ~p",[OutStr]),
+    true = string:equal(ExpectedStr, OutStr),
+    ct:pal("State = ~p",[kjell_profile:state()]),
+    kjell_profile:stop(),
+    ok.
+
+cmd_error() ->
+    [].
+
+cmd_error(Config) ->
+    kjell_profile:start_link(),
+    DataDir = proplists:get_value(data_dir,Config),
+    ExpectedStr = "Error message",
+    ok = load_exts(DataDir),
+    {error, OutStr} = kjell_extension:activate({command,cmd_error},"test"),
+    ct:pal("Got result = ~p",[OutStr]),
+    true = string:equal(ExpectedStr, OutStr),
+    kjell_profile:stop(),
+    ok.
+
 
 load_exts(Path) ->
     ok = kjell_profile:load_profile(filename:join(Path,"kjell.config")),
@@ -172,4 +203,5 @@ load_exts(Path) ->
     kjell_extension:init_extensions(FullExtensionPath),
     ct:pal("All = ~p",[ets:all()]),
     ok.
+
 

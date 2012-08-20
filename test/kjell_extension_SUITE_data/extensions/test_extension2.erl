@@ -2,7 +2,7 @@
 
 % must be exported by all extensions
 -export([extends/0]).
--export([input/1,cmd/1]).
+-export([input/1,cmd2/1]).
 
 extends() ->
     {
@@ -11,7 +11,7 @@ extends() ->
       [
        % Extension point, {Module,Function}, Description
        {shell_input_line,{?MODULE,input},"Test input 2"},
-       {command,{?MODULE,cmd},"Test command"}
+       {command,{?MODULE,cmd2},"Test command"}
       ]
     }.
 
@@ -19,11 +19,9 @@ extends() ->
 
 
 input(Args) ->
-    [Arg] = Args,
-    io:format("(input) Extension got : ~p~n",[Arg]),
-    {ok, Arg}.
+    io:format("(input) Extension got : ~p~n",[Args]),
+    {ok, Args}.
 
-cmd(Args) ->
-    [Arg] = Args,
-    io:format("(cmd) Extension got : ~p~n",[Arg]),
-    {ok, Arg}.
+cmd2(Args) ->
+    io:format("(cmd) Extension got : ~p~n",[Args]),
+    {ok, Args}.
