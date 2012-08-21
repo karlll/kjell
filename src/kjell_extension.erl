@@ -90,6 +90,7 @@ load_extensions(Path) ->
     end.
 
 register_extensions(ExtList) ->
+    register_extensions(ExtList,[],[]).
 
 register_extensions([ExtMod|T],ExtPtRegister,ExtModDescList) ->
      ExtendsData = apply(ExtMod,extends,[]),
