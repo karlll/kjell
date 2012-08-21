@@ -104,11 +104,14 @@ groups() ->
 %% @end
 %%--------------------------------------------------------------------
 all() -> 
-    [load_extension,
+    [
+     load_extension,
      activate_ext_point,
      non_registered_ext_point,
      cmd_ok,
-     cmd_error].
+     cmd_error,
+     cmd_undef
+    ].
 
 %%--------------------------------------------------------------------
 %% @spec TestCase() -> Info
@@ -193,6 +196,19 @@ cmd_error(Config) ->
     true = string:equal(ExpectedStr, OutStr),
     kjell_profile:stop(),
     ok.
+
+
+cmd_undef() ->
+    [].
+
+cmd_undef(Config) ->
+    kjell_profile:start_link(),
+    DataDir = proplists:get_value(data_dir,Config),
+    ok = load_exts(DataDir),
+    {error, undefined} = kjell_extension:activate({command,cmd_undef},[]),
+    kjell_profile:stop(),
+    ok.
+
 
 
 load_exts(Path) ->
