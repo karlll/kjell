@@ -2,6 +2,8 @@
 
 
 SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-CUSTOM_OTP_ROOT="${SCRIPT_DIR}/../deps/otp-custom_ttsl_drv"
+CUSTOM_OTP_ROOT="${SCRIPT_DIR}/../deps/otp-custom_ttsl_drv/bin/" 
+
+test -d $CUSTOM_OTP_ROOT || CUSTOM_OTP_ROOT=""
  
-$CUSTOM_OTP_ROOT/bin/erl -noinput -pa ${SCRIPT_DIR}/../ebin/ -run start_kjell 
+${CUSTOM_OTP_ROOT}erl -noinput -pa ${SCRIPT_DIR}/../ebin/ -run start_kjell 
