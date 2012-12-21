@@ -591,7 +591,7 @@ report_exception(Class, Severity, {Reason,Stacktrace}, RT) ->
     SF = fun(M, _F, _A) -> (M =:= erl_eval) or (M =:= ?MODULE) end,
     io:requests([{put_chars, Tag},
                  {put_chars, 
-                  lib:format_exception(I, Class, Reason, Stacktrace, SF, PF)},
+                  k_lib:format_exception(I, Class, Reason, Stacktrace, SF, PF)},
                  nl]).
 
 start_eval(Bs, RT, Ds) ->
