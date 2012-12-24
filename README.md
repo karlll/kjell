@@ -26,3 +26,7 @@ See http://karlll.github.com/kjell/
 ## Author
 
 karlll, <karl@ninjacontrol.com>
+
+## Contributors
+
+Pedram Nimreezi <deadzen@deadzen.com>
