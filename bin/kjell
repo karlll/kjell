@@ -6,4 +6,4 @@ CUSTOM_OTP_ROOT="${SCRIPT_DIR}/../deps/otp-custom_ttsl_drv/bin/"
 
 test -d $CUSTOM_OTP_ROOT || CUSTOM_OTP_ROOT=""
  
-${CUSTOM_OTP_ROOT}erl -noinput -pa ${SCRIPT_DIR}/../ebin/ -run start_kjell 
+${CUSTOM_OTP_ROOT}erl -noinput -pa ${SCRIPT_DIR}/../ebin/ -run start_kjell $@

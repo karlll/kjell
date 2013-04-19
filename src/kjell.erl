@@ -359,10 +359,12 @@ bad_prompt_func(M) ->
 default_prompt(N) ->
     %% Don't bother flattening the list irrespective of what the
     %% I/O-protocol states.
+    D = integer_to_list(N),
+    Node = node(),
     case is_alive() of
-	true  -> P = io_lib:format(<<"(~s)~w> ">>, [node(), N]),
+	true  -> P = io_lib:format(<<"\e[1K\e[~pD(~s)~w> ">>, [length(D ++ atom_to_list(Node))+2, Node, N]),
 		 q(prompt,P);
-	false -> P = io_lib:format(<<"~w> ">>, [N]),
+	false -> P = io_lib:format(<<"\e[1K\e[~pD~w> ">>, [length(D)-1, N]),
 		 q(prompt,P)
     end.
 
