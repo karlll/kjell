@@ -3,6 +3,8 @@ kjell
 
 A Refurbished Erlang Shell
 
+![Kjell](http://karlll.github.io/kjell/images/kjell_demo_1.png)
+
 See http://karlll.github.com/kjell/
 
 ## Build
