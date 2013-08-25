@@ -7,17 +7,13 @@ A Refurbished Erlang Shell
 
 See http://karlll.github.com/kjell/
 
+## Dependencies
+
+* Erlang/OTP R16B01+
+
 ## Build
 ~~~
   $ git clone https://github.com/karlll/kjell.git
-~~~  
-### Get and build dependencies
-~~~
-  $ cd kjell
-  $ make deps
-~~~  
-### Build kjell
-~~~
   $ make
 ~~~  
 ## Run
