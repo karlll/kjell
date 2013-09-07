@@ -250,7 +250,10 @@ server(StartSync) ->
     server_loop(0, start_eval(Bs, RT, []), Bs, RT, [], History, Results).
 
 banner() ->
-   ?BANNER.
+   case kjell_extension:activate(startup_msg, []) of % extension point = startup_msg 
+    [] -> ?BANNER;
+    {ok,StartupMsg} -> StartupMsg
+    end.
 banner(no_control_g) ->
     banner() ++ "(abort with ^G)".
 

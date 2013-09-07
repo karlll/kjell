@@ -132,6 +132,7 @@ load_extension() ->
 %%--------------------------------------------------------------------
 load_extension(Config) -> 
     kjell_profile:start_link(),
+    kjell_extension:start_link(),
     DataDir = proplists:get_value(data_dir,Config),
     ok = load_exts(DataDir),
     kjell_profile:stop(),
@@ -143,6 +144,7 @@ activate_ext_point() ->
 
 activate_ext_point(Config) ->
     kjell_profile:start_link(),
+    kjell_extension:start_link(),
     DataDir = proplists:get_value(data_dir,Config),
     ok = load_exts(DataDir),
 
@@ -159,6 +161,7 @@ non_registered_ext_point() ->
 
 non_registered_ext_point(Config) ->
     kjell_profile:start_link(),
+    kjell_extension:start_link(),
     DataDir = proplists:get_value(data_dir,Config),
     ok = load_exts(DataDir),
     ExpectedStr = "test",
@@ -173,6 +176,7 @@ cmd_ok() ->
 
 cmd_ok(Config) ->
     kjell_profile:start_link(),
+    kjell_extension:start_link(),
     DataDir = proplists:get_value(data_dir,Config),
     ExpectedStr = "(cmd) Extension got : \"test\"\n",
     ok = load_exts(DataDir),
@@ -188,6 +192,7 @@ cmd_error() ->
 
 cmd_error(Config) ->
     kjell_profile:start_link(),
+    kjell_extension:start_link(),
     DataDir = proplists:get_value(data_dir,Config),
     ExpectedStr = "Error message",
     ok = load_exts(DataDir),
@@ -203,6 +208,7 @@ cmd_undef() ->
 
 cmd_undef(Config) ->
     kjell_profile:start_link(),
+    kjell_extension:start_link(),
     DataDir = proplists:get_value(data_dir,Config),
     ok = load_exts(DataDir),
     {error, undefined} = kjell_extension:activate({command,cmd_undef},[]),

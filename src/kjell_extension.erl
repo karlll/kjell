@@ -8,6 +8,170 @@
 
 -compile([export_all]).
 
+
+-behaviour(gen_server).
+
+%% API
+-export([start_link/0]).
+
+%% gen_server callbacks
+-export([init/1, handle_call/3, handle_cast/2, handle_info/2,
+	 terminate/2, code_change/3]).
+
+-define(SERVER, ?MODULE). 
+
+-record(state, {}).
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Starts the server
+%%
+%% @spec start_link() -> {ok, Pid} | ignore | {error, Error}
+%% @end
+%%--------------------------------------------------------------------
+start_link() ->
+    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+
+stop() ->
+    gen_server:call(?MODULE,stop).
+    
+%%%===================================================================
+%%% API
+%%%===================================================================
+
+init_extensions(ExtensionPath)->							     
+	gen_server:call(?MODULE,{init_extensions, ExtensionPath}).
+
+activate({command,Cmd},InData) ->
+	gen_server:call(?MODULE,{activate, {command, Cmd},InData});
+
+activate(ExtPoint,InData)->
+	gen_server:call(?MODULE,{activate,ExtPoint,InData}).
+
+%%%===================================================================
+%%% gen_server callbacks
+%%%===================================================================
+
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% Initializes the server
+%%
+%% @spec init(Args) -> {ok, State} |
+%%                     {ok, State, Timeout} |
+%%                     ignore |
+%%                     {stop, Reason}
+%% @end
+%%--------------------------------------------------------------------
+init([]) ->
+    {ok, #state{}}.
+
+
+handle_call({init_extensions,ExtensionPath}, _From, State) ->
+
+	io:format("DEBUG: init_extensions.~n"),
+
+    ets:new(ext_pts,[named_table]),
+    ets:new(ext_desc,[named_table]),
+
+    case load_extensions(ExtensionPath) of
+		{ok, Exts} ->
+		    ok = register_extensions(Exts);
+		_Other ->
+		    io:format("No extensions loaded.~n")
+    end,
+    {reply, ok, State};
+
+handle_call({activate,{command,Cmd},InData}, _From, State) ->
+
+    Command = get_cmd_ext(Cmd),
+    case Command of
+		undefined ->
+	    	{reply, {error, undefined}, State};
+      	CmdModFuns ->
+	    	{reply, apply_extension({command,CmdModFuns},InData), State}
+    end;
+
+handle_call({activate,ExtPoint,InData}, _From, State)->
+    Extensions = ets:lookup(ext_pts,ExtPoint),
+    case Extensions of 
+	[] ->
+	    {reply, InData, State};
+	Extensions ->
+	    case point_type(ExtPoint) of
+			single ->
+			    {reply, apply_extension(hd(Extensions),InData), State};
+			multiple ->
+			    {reply, apply_extensions(hd(Extensions),InData), State}; % TODO : implement multiple extensions
+			none ->
+			    {reply, InData, State}
+	    end
+    end;
+
+handle_call(stop, _From, State) ->
+    {stop, normal, shutdown_ok, State}.
+
+
+
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% Handling cast messages
+%%
+%% @spec handle_cast(Msg, State) -> {noreply, State} |
+%%                                  {noreply, State, Timeout} |
+%%                                  {stop, Reason, State}
+%% @end
+%%--------------------------------------------------------------------
+
+handle_cast(_Msg, State) ->
+    {noreply, State}.
+
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% Handling all non call/cast messages
+%%
+%% @spec handle_info(Info, State) -> {noreply, State} |
+%%                                   {noreply, State, Timeout} |
+%%                                   {stop, Reason, State}
+%% @end
+%%--------------------------------------------------------------------
+
+handle_info(_Info, State) ->
+    {noreply, State}.
+
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% This function is called by a gen_server when it is about to
+%% terminate. It should be the opposite of Module:init/1 and do any
+%% necessary cleaning up. When it returns, the gen_server terminates
+%% with Reason. The return value is ignored.
+%%
+%% @spec terminate(Reason, State) -> void()
+%% @end
+%%--------------------------------------------------------------------
+
+terminate(_Reason, _State) ->
+    ok.
+
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% Convert process state when code is changed
+%%
+%% @spec code_change(OldVsn, State, Extra) -> {ok, NewState}
+%% @end
+%%--------------------------------------------------------------------
+
+code_change(_OldVsn, State, _Extra) ->
+    {ok, State}.
+
+%%%===================================================================
+%%% Internal functions
+%%%===================================================================
+
 compile_extension(File, OutDir) ->
     compile_extension(File,OutDir,[]).
 
@@ -56,7 +220,7 @@ load_extensions(Path) ->
 	    io:format("No extensions loaded. Error while reading directory ~p: \"~p\"~n",[Path,Reason]),
 	    {ok, []};
 	{ok,FileList} ->
-						% Compile the files
+		% Compile the files
 	    CompdList = lists:map(fun(File) -> 
 					  case compile_extension(filename:join(Path,File),Path) of
 					      {ok,ExtModule} ->
@@ -100,8 +264,6 @@ register_extensions([ExtMod|T],ExtPtRegister,ExtModDescList) ->
 
 register_extensions([],ExtPtRegister,ExtModDescList) ->
     CExtPtRegister = compact_lst(ExtPtRegister),
-    ets:new(ext_pts,[named_table]),
-    ets:new(ext_desc,[named_table]),
     lists:map(fun(Pt) -> {P,ExtMods} = Pt,
 			 io:format("Inserting P = ~p , ExtMods = ~p~n",[P,ExtMods]),
 			 ets:insert_new(ext_pts,{P,ExtMods})
@@ -148,31 +310,6 @@ get_cmd_ext(Cmd) ->
 	 
 			     
 
-activate({command,Cmd},InData)->
-    Command = get_cmd_ext(Cmd),
-    case Command of
-	undefined ->
-	    {error, undefined};
-        CmdModFuns ->
-	    apply_extension({command,CmdModFuns},InData)
-    end;
-
-activate(ExtPoint,InData)->
-    Extensions = ets:lookup(ext_pts,ExtPoint),
-    case Extensions of 
-	[] ->
-	    InData;
-	Extensions ->
-	    case point_type(ExtPoint) of
-		single ->
-		    apply_extension(hd(Extensions),InData);
-		multiple ->
-		    apply_extensions(hd(Extensions),InData);
-		none ->
-		    InData
-	    end
-    end.
-
 
 
 
@@ -191,21 +328,15 @@ apply_extension({ExtPt,Exts},InData) when is_list(Exts) ->
 apply_extensions(Extensions,InData)->								 
    InData. %% todo
 
-init_extensions(ExtensionPath)->							     
-
-    case load_extensions(ExtensionPath) of
-	{ok, Exts} ->
-	    ok = register_extensions(Exts);
-	_Other ->
-	    io:format("No extensions loaded.~n")
-    end,
-    ok.
 
 
 
 
 point_type(shell_input_line) ->	single;
 point_type(shell_output_line) -> single;
+point_type(prompt) -> single;
+point_type(startup) -> single;
+point_type(startup_msg) -> single;
 point_type(Other) -> none.
 
 
