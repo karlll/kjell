@@ -24,38 +24,37 @@ start() ->
     ok.
 
 setup() ->
+	{ok, _} = kjell_profile:start_link(),
+	{ok, _} = kjell_extension:start_link(),
     ok = config(),
     ok.
 
 config() ->
-    config(get_cfg).
+    ok = config(get_cfg).
 
 config(get_cfg) ->
     case get_cfg_dir() of
-	{ok,CfgDir} ->
-	    case get_cfg_file(CfgDir) of
-		{ok,CfgFile} ->
-		    kjell_profile:start_link(),
-		    Cfg = filename:join(CfgDir,CfgFile),
-		    ok = kjell_profile:load_profile(Cfg),
-		    ok = kjell_profile:set_value(cfg_dir,CfgDir),
-		    config(get_ext_dir,CfgDir);
-	        {error,not_found} ->
-		    case create_default_cfg_file(CfgDir) of
-			ok -> 
-	    		    kjell_profile:start_link(),
-			    Cfg = filename:join(CfgDir,?CFG_FILE),
-			    create_default_colprof(CfgDir),
+		{ok,CfgDir} ->
+		    case get_cfg_file(CfgDir) of
+			{ok,CfgFile} ->
+			    Cfg = filename:join(CfgDir,CfgFile),
 			    ok = kjell_profile:load_profile(Cfg),
 			    ok = kjell_profile:set_value(cfg_dir,CfgDir),
-			    config(get_ext_dir,CfgDir);
-
-			{error,Reason} ->
-			    {error,Reason}
-		    end
-	    end;
-	{error,Reason} ->
-	    {error,Reason}
+			    ok = config(get_ext_dir,CfgDir);
+		    {error,not_found} ->
+			    case create_default_cfg_file(CfgDir) of
+				ok -> 
+				    Cfg = filename:join(CfgDir,?CFG_FILE),
+				    create_default_colprof(CfgDir),
+				    ok = kjell_profile:load_profile(Cfg),
+				    ok = kjell_profile:set_value(cfg_dir,CfgDir),
+				    ok = config(get_ext_dir,CfgDir);
+				{error,Reason} ->
+					{error,Reason}
+			    end
+		    end;
+		{error,Reason} ->
+	    	{error,Reason}
     end.
 
 config(get_ext_dir,CfgDir) ->
@@ -146,10 +145,9 @@ create_default_cfg_file(Path)->
     CfgFile = filename:join(Path,?CFG_FILE),
     case file:open(CfgFile,[write]) of
 	{ok, File} ->
-	    try lists:map(fun(L) -> file:write(File,lists:flatten(io_lib:format("~p.~n",[L]))) end, 
-			  default_config()) of
-		_Res -> 
-		    ok
+	    try lists:map(fun(L) -> file:write(File,lists:flatten(io_lib:format("~p.~n",[L]))) end, default_config()) of
+			_Res -> 
+		    	ok
 	    catch
 		Class:Reason ->
 		    Msg = io_lib:format("Error writing default config file : ~p : ~p~n",[Class,Reason]),
@@ -185,8 +183,7 @@ create_default_colprof(Path)->
     ProfFile = filename:join(Path,?COL_PROF),
     case file:open(ProfFile,[write]) of
 	{ok, File} ->
-	    try lists:map(fun(L) -> file:write(File,lists:flatten(io_lib:format("~p.~n",[L]))) end, 
-			  default_col_prof()) of
+	    try lists:map(fun(L) -> file:write(File,lists:flatten(io_lib:format("~p.~n",[L]))) end, default_col_prof()) of
 		_Res -> 
 		    ok
 	    catch

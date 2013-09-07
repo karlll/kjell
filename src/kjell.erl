@@ -250,7 +250,10 @@ server(StartSync) ->
     server_loop(0, start_eval(Bs, RT, []), Bs, RT, [], History, Results).
 
 banner() ->
-   ?BANNER.
+   case kjell_extension:activate(startup_msg, []) of % extension point = startup_msg 
+    [] -> ?BANNER;
+    {ok,StartupMsg} -> StartupMsg
+    end.
 banner(no_control_g) ->
     banner() ++ "(abort with ^G)".
 
@@ -341,16 +344,21 @@ prompt(N, Eval0, Bs0, RT, Ds0) ->
     end.
 
 get_prompt_func() ->
-    case application:get_env(stdlib, shell_prompt_func) of
-        {ok,{M,F}=PromptFunc} when is_atom(M), is_atom(F) ->
-            PromptFunc;
-        {ok,default=Default} ->
-            Default;
-        {ok,Term} ->
-            bad_prompt_func(Term),
-            default;
-        undefined ->
-            default
+    case kjell_extension:get_extension(prompt) of 
+        {{M,F}=PromptFuncExt, Desc} ->
+            PromptFuncExt;
+        [] ->
+            case application:get_env(stdlib, shell_prompt_func) of
+            {ok,{M,F}=PromptFunc} when is_atom(M), is_atom(F) ->
+                PromptFunc;
+            {ok,default=Default} ->
+                Default;
+            {ok,Term} ->
+                bad_prompt_func(Term),
+                default;
+            undefined ->
+                default
+            end
     end.
 
 bad_prompt_func(M) ->
