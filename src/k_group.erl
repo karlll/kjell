@@ -1,7 +1,7 @@
 %%
 %% %CopyrightBegin%
 %%
-%% Copyright Ericsson AB 1996-2010. All Rights Reserved.
+%% Copyright Ericsson AB 1996-2013. All Rights Reserved.
 %%
 %% The contents of this file are subject to the Erlang Public License,
 %% Version 1.1, (the "License"); you may not use this file except in
@@ -231,7 +231,7 @@ io_request({put_chars,latin1,Chars}, Drv, Buf) ->
 	    send_drv(Drv, {put_chars, unicode,Binary}),
 	    {ok,ok,Buf};
 	_ ->
-	    {error,{error,{put_chars,Chars}},Buf}
+	    {error,{error,{put_chars,latin1,Chars}},Buf}
     end;
 io_request({put_chars,latin1,M,F,As}, Drv, Buf) ->
     case catch apply(M, F, As) of
@@ -319,13 +319,6 @@ io_reply(From, ReplyAs, Reply) ->
 %% send_drv_reqs(Drv, Requests)
 
 send_drv(Drv, Msg) ->
-    %% case Msg of 
-    %% 	{put_chars,unicode,B} -> 
-    %% 	    B2 = lists:flatten(io_lib:format("# ~s",[B])), %added for test
-    %% 	    Drv ! {self(),{put_chars,unicode,B2}};
-    %% 	_ -> 
-    %% 	    Drv ! {self(),Msg}
-    %% end.
     Drv ! {self(),Msg}.
 
 send_drv_reqs(_Drv, []) -> [];
@@ -435,7 +428,7 @@ get_password_chars(Drv,Buf) ->
     end.
 
 get_chars(Prompt, M, F, Xa, Drv, Buf, Encoding) ->
-    Pbs = prompt_bytes(Prompt),
+    Pbs = prompt_bytes(Prompt, Encoding),
     get_chars_loop(Pbs, M, F, Xa, Drv, Buf, start, Encoding).
 
 get_chars_loop(Pbs, M, F, Xa, Drv, Buf0, State, Encoding) ->
@@ -457,7 +450,6 @@ get_chars_loop(Pbs, M, F, Xa, Drv, Buf0, State, Encoding) ->
     end.
 
 get_chars_apply(Pbs, M, F, Xa, Drv, Buf, State0, Line, Encoding) ->
-    id(M,F),
     case catch M:F(State0, cast(Line,get(read_mode), Encoding), Encoding, Xa) of
 	{stop,Result,Rest} ->
 	    {ok,Result,append(Rest, Buf, Encoding)};
@@ -467,8 +459,6 @@ get_chars_apply(Pbs, M, F, Xa, Drv, Buf, State0, Line, Encoding) ->
 	    get_chars_loop(Pbs, M, F, Xa, Drv, Buf, State1, Encoding)
     end.
 
-id(M,F) ->
-    {M,F}.
 %% Convert error code to make it look as before
 err_func(io_lib, get_until, {_,F,_}) ->
     F;
@@ -526,6 +516,27 @@ get_line1({undefined,{_A,Mode,Char},Cs,Cont,Rs}, Drv, Ls0, Encoding)
 		      Drv,
 		      Ls, Encoding)
     end;
+%% ^R = backward search, ^S = forward search.
+%% Search is tricky to implement and does a lot of back-and-forth
+%% work with edlin.erl (from stdlib). Edlin takes care of writing
+%% and handling lines and escape characters to get out of search,
+%% whereas this module does the actual searching and appending to lines.
+%% Erlang's shell wasn't exactly meant to traverse the wall between
+%% line and line stack, so we at least restrict it by introducing
+%% new modes: search, search_quit, search_found. These are added to
+%% the regular ones (none, meta_left_sq_bracket) and handle special
+%% cases of history search.
+get_line1({undefined,{_A,Mode,Char},Cs,Cont,Rs}, Drv, Ls, Encoding)
+  when ((Mode =:= none) and (Char =:= $\^R)) ->
+    send_drv_reqs(Drv, Rs),
+    %% drop current line, move to search mode. We store the current
+    %% prompt ('N>') and substitute it with the search prompt.
+    send_drv_reqs(Drv, edlin:erase_line(Cont)),
+    put(search_quit_prompt, edlin:prompt(Cont)),
+    Pbs = prompt_bytes("(search)`': ", Encoding),
+    {more_chars,Ncont,Nrs} = edlin:start(Pbs, search),
+    send_drv_reqs(Drv, Nrs),
+    get_line1(edlin:edit_line1(Cs, Ncont), Drv, Ls, Encoding);
 get_line1({expand, Before, Cs0, Cont,Rs}, Drv, Ls0, Encoding) ->
     send_drv_reqs(Drv, Rs),
     ExpandFun = get(expand_fun),
@@ -546,8 +557,59 @@ get_line1({undefined,_Char,Cs,Cont,Rs}, Drv, Ls, Encoding) ->
     send_drv_reqs(Drv, Rs),
     send_drv(Drv, beep),
     get_line1(edlin:edit_line(Cs, Cont), Drv, Ls, Encoding);
+%% The search item was found and accepted (new line entered on the exact
+%% result found)
+get_line1({_What,Cont={line,_Prompt,_Chars,search_found},Rs}, Drv, Ls0, Encoding) ->
+    Line = edlin:current_line(Cont),
+    %% this may create duplicate entries.
+    Ls = save_line(new_stack(get_lines(Ls0)), Line),
+    get_line1({done, Line, "", Rs}, Drv, Ls, Encoding);
+%% The search mode has been exited, but the user wants to remain in line
+%% editing mode wherever that was, but editing the search result.
+get_line1({What,Cont={line,_Prompt,_Chars,search_quit},Rs}, Drv, Ls, Encoding) ->
+    Line = edlin:current_chars(Cont),
+    %% Load back the old prompt with the correct line number.
+    case get(search_quit_prompt) of
+	undefined -> % should not happen. Fallback.
+	    LsFallback = save_line(new_stack(get_lines(Ls)), Line),
+	    get_line1({done, "\n", Line, Rs}, Drv, LsFallback, Encoding);
+	Prompt -> % redraw the line and keep going with the same stack position
+	    NCont = {line,Prompt,{lists:reverse(Line),[]},none},
+	    send_drv_reqs(Drv, Rs),
+	    send_drv_reqs(Drv, edlin:erase_line(Cont)),
+	    send_drv_reqs(Drv, edlin:redraw_line(NCont)),
+	    get_line1({What, NCont ,[]}, Drv, pad_stack(Ls), Encoding)
+    end;
+%% Search mode is entered.
+get_line1({What,{line,Prompt,{RevCmd0,_Aft},search},Rs},
+       Drv, Ls0, Encoding) ->
+    send_drv_reqs(Drv, Rs),
+    %% Figure out search direction. ^S and ^R are returned through edlin
+    %% whenever we received a search while being already in search mode.
+    {Search, Ls1, RevCmd} = case RevCmd0 of
+	[$\^S|RevCmd1] ->
+	    {fun search_down_stack/2, Ls0, RevCmd1};
+	[$\^R|RevCmd1] ->
+	    {fun search_up_stack/2, Ls0, RevCmd1};
+	_ -> % new search, rewind stack for a proper search.
+	    {fun search_up_stack/2, new_stack(get_lines(Ls0)), RevCmd0}
+    end,
+    Cmd = lists:reverse(RevCmd),
+    {Ls, NewStack} = case Search(Ls1, Cmd) of
+	{none, Ls2} ->
+	    send_drv(Drv, beep),
+	    {Ls2, {RevCmd, "': "}};
+	{Line, Ls2} -> % found. Complete the output edlin couldn't have done.
+	    send_drv_reqs(Drv, [{put_chars, Encoding, Line}]),
+	    {Ls2, {RevCmd, "': "++Line}}
+    end,
+    Cont = {line,Prompt,NewStack,search},
+    more_data(What, Cont, Drv, Ls, Encoding);
 get_line1({What,Cont0,Rs}, Drv, Ls, Encoding) ->
     send_drv_reqs(Drv, Rs),
+    more_data(What, Cont0, Drv, Ls, Encoding).
+
+more_data(What, Cont0, Drv, Ls, Encoding) ->
     receive
 	{Drv,{data,Cs}} ->
 	    get_line1(edlin:edit_line(Cs, Cont0), Drv, Ls, Encoding);
@@ -567,7 +629,6 @@ get_line1({What,Cont0,Rs}, Drv, Ls, Encoding) ->
 	get_line_timeout(What)->
 	    get_line1(edlin:edit_line([], Cont0), Drv, Ls, Encoding)
     end.
-
 
 get_line_echo_off(Chars, Pbs, Drv) ->
     send_drv_reqs(Drv, [{put_chars, unicode,Pbs}]),
@@ -643,12 +704,46 @@ save_line({stack, U, {}, []}, Line) ->
 save_line({stack, U, _L, D}, Line) ->
     {stack, U, Line, D}.
 
-get_lines({stack, U, {}, []}) ->
+get_lines(Ls) -> get_all_lines(Ls).
+%get_lines({stack, U, {}, []}) ->
+%    U;
+%get_lines({stack, U, {}, D}) ->
+%    tl(lists:reverse(D, U));
+%get_lines({stack, U, L, D}) ->
+%    get_lines({stack, U, {}, [L|D]}).
+
+%% There's a funny behaviour whenever the line stack doesn't have a "\n"
+%% at its end -- get_lines() seemed to work on the assumption it *will* be
+%% there, but the manipulations done with search history do not require it.
+%%
+%% It is an assumption because the function was built with either the full
+%% stack being on the 'Up' side (we're on the new line) where it isn't
+%% stripped. The only other case when it isn't on the 'Up' side is when
+%% someone has used the up/down arrows (or ^P and ^N) to navigate lines,
+%% in which case, a line with only a \n is stored at the end of the stack
+%% (the \n is returned by edlin:current_line/1).
+%%
+%% get_all_lines works the same as get_lines, but only strips the trailing
+%% character if it's a linebreak. Otherwise it's kept the same. This is
+%% because traversing the stack due to search history will *not* insert
+%% said empty line in the stack at the same time as other commands do,
+%% and thus it should not always be stripped unless we know a new line
+%% is the last entry.
+get_all_lines({stack, U, {}, []}) ->
     U;
-get_lines({stack, U, {}, D}) ->
-    tl(lists:reverse(D, U));
-get_lines({stack, U, L, D}) ->
-    get_lines({stack, U, {}, [L|D]}).
+get_all_lines({stack, U, {}, D}) ->
+    case lists:reverse(D, U) of
+	["\n"|Lines] -> Lines;
+	Lines -> Lines
+    end;
+get_all_lines({stack, U, L, D}) ->
+    get_all_lines({stack, U, {}, [L|D]}).
+
+%% For the same reason as above, though, we need to expand the stack
+%% in some cases to make sure we play nice with up/down arrows. We need
+%% to insert newlines, but not always.
+pad_stack({stack, U, L, D}) ->
+    {stack, U, L, D++["\n"]}.
 
 save_line_buffer("\n", Lines) ->
     save_line_buffer(Lines);
@@ -659,6 +754,27 @@ save_line_buffer(Line, Lines) ->
 
 save_line_buffer(Lines) ->
     put(line_buffer, Lines).
+
+search_up_stack(Stack, Substr) ->
+    case up_stack(Stack) of
+	{none,NewStack} -> {none,NewStack};
+	{L, NewStack} ->
+	    case string:str(L, Substr) of
+		0 -> search_up_stack(NewStack, Substr);
+		_ -> {string:strip(L,right,$\n), NewStack}
+	    end
+    end.
+
+search_down_stack(Stack, Substr) ->
+    case down_stack(Stack) of
+	{none,NewStack} -> {none,NewStack};
+	{L, NewStack} ->
+	    case string:str(L, Substr) of
+		0 -> search_down_stack(NewStack, Substr);
+		_ -> {string:strip(L,right,$\n), NewStack}
+	    end
+    end.
+
 
 %% This is get_line without line editing (except for backspace) and
 %% without echo.
@@ -698,10 +814,10 @@ edit_password([$\177|Cs],[_|Chars]) ->%% is backspace enough?
 edit_password([Char|Cs],Chars) ->
     edit_password(Cs,[Char|Chars]).
 
-%% prompt_bytes(Prompt)
-%%  Return a flat list of bytes for the Prompt.
-prompt_bytes(Prompt) ->
-    lists:flatten(io_lib:format_prompt(Prompt)).
+%% prompt_bytes(Prompt, Encoding)
+%%  Return a flat list of characters for the Prompt.
+prompt_bytes(Prompt, Encoding) ->
+    lists:flatten(io_lib:format_prompt(Prompt, Encoding)).
 
 cast(L, binary,latin1) when is_list(L) ->
     list_to_binary(L);

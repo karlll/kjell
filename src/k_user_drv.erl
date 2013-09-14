@@ -490,22 +490,10 @@ set_unicode_state(Iport, Bool) ->
 %% io_requests(Requests, InPort, OutPort)
 
 io_request({put_chars, unicode,Cs}, _Iport, Oport) ->
-     Cs2 = case Cs of
-     	      <<"1"/utf8>> -> flatten(io_lib:format("\e[4;31m~ts\e[0m",[Cs]));
-     	      <<"2"/utf8>> -> flatten(io_lib:format("\e[4;31m~ts\e[0m",[Cs]));
-     	      <<"3"/utf8>> -> flatten(io_lib:format("\e[4;31m~ts\e[0m",[Cs]));
-     	      <<"123"/utf8>> -> flatten(io_lib:format("\e[4;31m~ts\e[0m",[Cs]));
-
-
-     	      _ -> Cs
-     	  end,
-    %%Cs2 = flatten(io_lib:format("\e[4;31m~ts\e[0m",[Cs])),
-    %io:format("o"),
-    Oport ! {self(),{command,[?OP_PUTC|unicode:characters_to_binary(Cs2,utf8)]}};
+    Oport ! {self(),{command,[?OP_PUTC|unicode:characters_to_binary(Cs,utf8)]}};
 io_request({move_rel,N}, _Iport, Oport) ->
     Oport ! {self(),{command,[?OP_MOVE|put_int16(N, [])]}};
 io_request({insert_chars,unicode,Cs}, _Iport, Oport) ->
-    %Cs2 = flatten(io_lib:format("## ~s",[Cs])),
     Oport ! {self(),{command,[?OP_INSC|unicode:characters_to_binary(Cs,utf8)]}};
 io_request({delete_chars,N}, _Iport, Oport) ->
     Oport ! {self(),{command,[?OP_DELC|put_int16(N, [])]}};
