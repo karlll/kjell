@@ -240,7 +240,7 @@ format_strs(TextAttrs) ->
 				      {fg_color, FgColor},
 				      {bg_color, BgColor}]),
 
-		FmtStr = etcol:t([ { Attrs, "~s"},
+		FmtStr = etcol:t([ { Attrs, "~ts"},
 				   { [{text_attr,reset}], ""}
 				 ]),
 		{Class, FmtStr}
