@@ -20,6 +20,10 @@
 
 start() ->
     ok = setup(),
+   	case kjell_extension:activate(startup, []) of % extension point = startup
+   		{error, Msg} -> io:format("ERROR: ~s", [Msg]);
+   		_ -> ok 
+    end,
     k_user_drv:start([?TTY_DRV,{kjell,start,[init]}]),
     ok.
 
