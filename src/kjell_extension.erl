@@ -19,6 +19,7 @@
 	 terminate/2, code_change/3]).
 
 -define(SERVER, ?MODULE). 
+-define(LOG, kjell_log).
 
 -record(state, {}).
 
@@ -90,7 +91,7 @@ init([]) ->
 
 handle_call({init_extensions,ExtensionPath}, _From, State) ->
 
-	io:format("DEBUG: init_extensions.~n"),
+	?LOG:debug("init extensions."),
 
     ets:new(ext_pts,[named_table]),
     ets:new(ext_desc,[named_table]),
@@ -99,7 +100,7 @@ handle_call({init_extensions,ExtensionPath}, _From, State) ->
 		{ok, Exts} ->
 		    ok = register_extensions(Exts);
 		_Other ->
-		    io:format("No extensions loaded.~n")
+		    ?LOG:debug("No extensions loaded.")
     end,
     {reply, ok, State};
 
@@ -216,7 +217,7 @@ compile_extension(File, OutDir, Options) ->
 	    {ok,ExtModule};
 	{ok, ExtModule, Warnings} ->
 	    case Verbose of
-		true -> io:format("compile_extension: compiling ~p, got warning(s) = ~p~n",[File,Warnings]);
+		true -> ?LOG:warn("compile_extension: compiling ~p, got warning(s) = ~p",[File,Warnings]);
 		false -> ok
 	    end,
 	    case Strict of
@@ -225,13 +226,13 @@ compile_extension(File, OutDir, Options) ->
 	    end;
 	{error, Error, []} ->
 	    case Verbose of
-		true -> io:format("compile_extension: compiling ~p, got error(s) = ~p~n",[File,Error]);
+		true -> ?LOG:warn("compile_extension: compiling ~p, got error(s) = ~p",[File,Error]);
 		false -> ok
 	    end,
 	    {error,Error};
 	{error, Error, Warnings} ->
 	    case Verbose of
-		true -> io:format("compile_extension: compiling ~p, got error(s) = ~p, warning(s) = ~p~n",[File,Error,Warnings]);
+		true -> ?LOG:warn("compile_extension: compiling ~p, got error(s) = ~p, warning(s) = ~p",[File,Error,Warnings]);
 		false -> ok
 	    end,
 	    {error,Error}
@@ -250,7 +251,7 @@ get_modules(Path)->
 load_extensions(Path) ->
     case get_modules(Path) of
 	{error,Reason} ->
-	    io:format("No extensions loaded. Error while reading directory ~p: \"~p\"~n",[Path,Reason]),
+	    ?LOG:warn("No extensions loaded. Error while reading directory ~p: \"~p\"",[Path,Reason]),
 	    {ok, []};
 	{ok,FileList} ->
 		% Compile the files
@@ -259,12 +260,12 @@ load_extensions(Path) ->
 					      {ok,ExtModule} ->
 						  ExtModule;
 					      {error,Error} ->
-						  io:format("Error while compiling ~p (~p).~n",[File,Error]),
+						  ?LOG:warn("Error while compiling ~p (~p).",[File,Error]),
 						  none
 					  end
 				  end, FileList),
 						% Select valid extensions
-	    io:format("DEBUG : Adding code path = ~p~n",[Path]),
+	    ?LOG:debug("Adding code path = ~p",[Path]),
 	    true = code:add_patha(Path),
 	    ExtList = lists:filter(fun(CompdItem) -> 
 					   case CompdItem  of
@@ -275,7 +276,7 @@ load_extensions(Path) ->
 
 						   case lists:member({extends,0},Exports) of
 						       true ->
-							   io:format("DEBUG: ~p is an extension~n", [CompdItem]),
+							   ?LOG:debug("~p is an extension", [CompdItem]),
 							   true;
 						       false ->
 							   false
@@ -298,7 +299,7 @@ register_extensions([ExtMod|T],ExtPtRegister,ExtModDescList) ->
 register_extensions([],ExtPtRegister,ExtModDescList) ->
     CExtPtRegister = compact_lst(ExtPtRegister),
     lists:map(fun(Pt) -> {P,ExtMods} = Pt,
-			 io:format("Inserting P = ~p , ExtMods = ~p~n",[P,ExtMods]),
+			 ?LOG:debug("Inserting P = ~p , ExtMods = ~p",[P,ExtMods]),
 			 ets:insert_new(ext_pts,{P,ExtMods})
 	      end, CExtPtRegister),
     ets:insert_new(ext_desc,{loaded_exts,ExtModDescList}),
