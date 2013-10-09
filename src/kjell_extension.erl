@@ -61,6 +61,13 @@ get_extension(ExtPoint) ->
 get_extensions(ExtPoint) ->
 	gen_server:call(?MODULE,{get_extensions,ExtPoint}).
 
+-spec has_extensions(ExtPoint::term()) -> true | false.
+has_extensions(ExtPoint) ->
+	case get_extension(ExtPoint) of
+		[] -> false;
+		_ -> true
+	end.
+
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -357,7 +364,7 @@ apply_extensions(Extensions,InData)->
 
 
 
-
+% Valid extension points
 point_type(shell_input_line) ->	single;
 point_type(shell_output_line) -> single;
 point_type(prompt) -> single;
