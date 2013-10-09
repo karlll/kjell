@@ -106,7 +106,26 @@ groups() ->
 %% @end
 %%--------------------------------------------------------------------
 all() -> 
-    [load_profile].
+    [load_profile, set_value, get_value, get_undef_value].
+
+set_value() ->
+    [].
+set_value(Config) ->
+    {ok, Pid} = kjell_profile:start_link(),
+    ok = kjell_profile:set_value(test, testvalue).
+
+get_value() ->
+    [].
+get_value(Config) ->
+    {ok, Pid} = kjell_profile:start_link(),
+    ok = kjell_profile:set_value(test2, testvalue2),
+    testvalue2 = kjell_profile:get_value(test2).
+
+get_undef_value() ->
+    [].
+get_undef_value(Config) ->
+    {ok, Pid} = kjell_profile:start_link(),
+    undefined = kjell_profile:get_value(undef).
 
 load_profile() -> 
     [].
