@@ -4,7 +4,7 @@
 %%% @end
 
 
--define(VERSION,"0.1").
+-define(VERSION,"0.2.0").
 -define(BANNER,"Kjell v." ++ ?VERSION).
 
 -define(DEFAULT_COLORS,
@@ -54,8 +54,16 @@
       %% $:
       {colon,{none,white,none}},
       %% $|
-      {pipe,{none,white,none}}
+      {pipe,{none,white,none}},
 
+      % Needed for kjell-prompt extension
+      {prompt_start,{reverse,yellow,none}},
+      {prompt_text,{dim,black,yellow}},
+      {prompt_end,{none,yellow,none}}
 
     ]).
+
+
+-define(EDLIN,edlin).
+
 

@@ -18,10 +18,15 @@
 %%
 -module(k_group).
 
+-include("kjell.hrl").
+
 %% A group leader process for user io.
 
 -export([start/2, start/3, server/3]).
 -export([interfaces/1]).
+
+
+
 
 start(Drv, Shell) ->
     start(Drv, Shell, []).
@@ -31,7 +36,7 @@ start(Drv, Shell, Options) ->
 
 server(Drv, Shell, Options) ->
     process_flag(trap_exit, true),
-    edlin:init(),
+    ?EDLIN:init(),
     put(line_buffer, proplists:get_value(line_buffer, Options, [])),
     put(read_mode, list),
     put(user_drv, Drv),
@@ -473,9 +478,9 @@ err_func(_, F, _) ->
 %%	interrupted
 
 get_line(Chars, Pbs, Drv, Encoding) ->
-    {more_chars,Cont,Rs} = edlin:start(Pbs),
+    {more_chars,Cont,Rs} = ?EDLIN:start(Pbs),
     send_drv_reqs(Drv, Rs),
-    get_line1(edlin:edit_line(Chars, Cont), Drv, new_stack(get(line_buffer)), 
+    get_line1(?EDLIN:edit_line(Chars, Cont), Drv, new_stack(get(line_buffer)), 
 	      Encoding).
 
 get_line1({done,Line,Rest,Rs}, Drv, Ls, _Encoding) ->
@@ -486,15 +491,15 @@ get_line1({undefined,{_A,Mode,Char},Cs,Cont,Rs}, Drv, Ls0, Encoding)
   when ((Mode =:= none) and (Char =:= $\^P))
        or ((Mode =:= meta_left_sq_bracket) and (Char =:= $A)) ->
     send_drv_reqs(Drv, Rs),
-    case up_stack(save_line(Ls0, edlin:current_line(Cont))) of
+    case up_stack(save_line(Ls0, ?EDLIN:current_line(Cont))) of
 	{none,_Ls} ->
 	    send_drv(Drv, beep),
-	    get_line1(edlin:edit_line(Cs, Cont), Drv, Ls0, Encoding);
+	    get_line1(?EDLIN:edit_line(Cs, Cont), Drv, Ls0, Encoding);
 	{Lcs,Ls} ->
-	    send_drv_reqs(Drv, edlin:erase_line(Cont)),
-	    {more_chars,Ncont,Nrs} = edlin:start(edlin:prompt(Cont)),
+	    send_drv_reqs(Drv, ?EDLIN:erase_inp(Cont)),
+	    {more_chars,Ncont,Nrs} = ?EDLIN:start([]),
 	    send_drv_reqs(Drv, Nrs),
-	    get_line1(edlin:edit_line1(lists:sublist(Lcs, 1, length(Lcs)-1),
+	    get_line1(?EDLIN:edit_line1(lists:sublist(Lcs, 1, length(Lcs)-1),
 				      Ncont),
 		      Drv,
 		      Ls, Encoding)
@@ -503,15 +508,15 @@ get_line1({undefined,{_A,Mode,Char},Cs,Cont,Rs}, Drv, Ls0, Encoding)
   when ((Mode =:= none) and (Char =:= $\^N))
        or ((Mode =:= meta_left_sq_bracket) and (Char =:= $B)) ->
     send_drv_reqs(Drv, Rs),
-    case down_stack(save_line(Ls0, edlin:current_line(Cont))) of
+    case down_stack(save_line(Ls0, ?EDLIN:current_line(Cont))) of
 	{none,_Ls} ->
 	    send_drv(Drv, beep),
-	    get_line1(edlin:edit_line(Cs, Cont), Drv, Ls0, Encoding);
+	    get_line1(?EDLIN:edit_line(Cs, Cont), Drv, Ls0, Encoding);
 	{Lcs,Ls} ->
-	    send_drv_reqs(Drv, edlin:erase_line(Cont)),
-	    {more_chars,Ncont,Nrs} = edlin:start(edlin:prompt(Cont)),
+	    send_drv_reqs(Drv, ?EDLIN:erase_inp(Cont)),
+	    {more_chars,Ncont,Nrs} = ?EDLIN:start([]),
 	    send_drv_reqs(Drv, Nrs),
-	    get_line1(edlin:edit_line1(lists:sublist(Lcs, 1, length(Lcs)-1),
+	    get_line1(?EDLIN:edit_line1(lists:sublist(Lcs, 1, length(Lcs)-1),
 				      Ncont),
 		      Drv,
 		      Ls, Encoding)
@@ -531,12 +536,12 @@ get_line1({undefined,{_A,Mode,Char},Cs,Cont,Rs}, Drv, Ls, Encoding)
     send_drv_reqs(Drv, Rs),
     %% drop current line, move to search mode. We store the current
     %% prompt ('N>') and substitute it with the search prompt.
-    send_drv_reqs(Drv, edlin:erase_line(Cont)),
-    put(search_quit_prompt, edlin:prompt(Cont)),
+    send_drv_reqs(Drv, ?EDLIN:erase_line(Cont)),
+    put(search_quit_prompt, ?EDLIN:prompt(Cont)),
     Pbs = prompt_bytes("(search)`': ", Encoding),
-    {more_chars,Ncont,Nrs} = edlin:start(Pbs, search),
+    {more_chars,Ncont,Nrs} = ?EDLIN:start(Pbs, search),
     send_drv_reqs(Drv, Nrs),
-    get_line1(edlin:edit_line1(Cs, Ncont), Drv, Ls, Encoding);
+    get_line1(?EDLIN:edit_line1(Cs, Ncont), Drv, Ls, Encoding);
 get_line1({expand, Before, Cs0, Cont,Rs}, Drv, Ls0, Encoding) ->
     send_drv_reqs(Drv, Rs),
     ExpandFun = get(expand_fun),
@@ -552,22 +557,22 @@ get_line1({expand, Before, Cs0, Cont,Rs}, Drv, Ls0, Encoding) ->
 		  send_drv(Drv, {put_chars, unicode, unicode:characters_to_binary(MatchStr,unicode)}),
 		  [$\^L | Cs1]
 	 end,
-    get_line1(edlin:edit_line(Cs, Cont), Drv, Ls0, Encoding);
+    get_line1(?EDLIN:edit_line(Cs, Cont), Drv, Ls0, Encoding);
 get_line1({undefined,_Char,Cs,Cont,Rs}, Drv, Ls, Encoding) ->
     send_drv_reqs(Drv, Rs),
     send_drv(Drv, beep),
-    get_line1(edlin:edit_line(Cs, Cont), Drv, Ls, Encoding);
+    get_line1(?EDLIN:edit_line(Cs, Cont), Drv, Ls, Encoding);
 %% The search item was found and accepted (new line entered on the exact
 %% result found)
 get_line1({_What,Cont={line,_Prompt,_Chars,search_found},Rs}, Drv, Ls0, Encoding) ->
-    Line = edlin:current_line(Cont),
+    Line = ?EDLIN:current_line(Cont),
     %% this may create duplicate entries.
     Ls = save_line(new_stack(get_lines(Ls0)), Line),
     get_line1({done, Line, "", Rs}, Drv, Ls, Encoding);
 %% The search mode has been exited, but the user wants to remain in line
 %% editing mode wherever that was, but editing the search result.
 get_line1({What,Cont={line,_Prompt,_Chars,search_quit},Rs}, Drv, Ls, Encoding) ->
-    Line = edlin:current_chars(Cont),
+    Line = ?EDLIN:current_chars(Cont),
     %% Load back the old prompt with the correct line number.
     case get(search_quit_prompt) of
 	undefined -> % should not happen. Fallback.
@@ -576,8 +581,8 @@ get_line1({What,Cont={line,_Prompt,_Chars,search_quit},Rs}, Drv, Ls, Encoding) -
 	Prompt -> % redraw the line and keep going with the same stack position
 	    NCont = {line,Prompt,{lists:reverse(Line),[]},none},
 	    send_drv_reqs(Drv, Rs),
-	    send_drv_reqs(Drv, edlin:erase_line(Cont)),
-	    send_drv_reqs(Drv, edlin:redraw_line(NCont)),
+	    send_drv_reqs(Drv, ?EDLIN:erase_line(Cont)),
+	    send_drv_reqs(Drv, ?EDLIN:redraw_line(NCont)),
 	    get_line1({What, NCont ,[]}, Drv, pad_stack(Ls), Encoding)
     end;
 %% Search mode is entered.
@@ -612,14 +617,14 @@ get_line1({What,Cont0,Rs}, Drv, Ls, Encoding) ->
 more_data(What, Cont0, Drv, Ls, Encoding) ->
     receive
 	{Drv,{data,Cs}} ->
-	    get_line1(edlin:edit_line(Cs, Cont0), Drv, Ls, Encoding);
+	    get_line1(?EDLIN:edit_line(Cs, Cont0), Drv, Ls, Encoding);
 	{Drv,eof} ->
-	    get_line1(edlin:edit_line(eof, Cont0), Drv, Ls, Encoding);
+	    get_line1(?EDLIN:edit_line(eof, Cont0), Drv, Ls, Encoding);
 	{io_request,From,ReplyAs,Req} when is_pid(From) ->
-	    {more_chars,Cont,_More} = edlin:edit_line([], Cont0),
-	    send_drv_reqs(Drv, edlin:erase_line(Cont)),
+	    {more_chars,Cont,_More} = ?EDLIN:edit_line([], Cont0),
+	    send_drv_reqs(Drv, ?EDLIN:erase_line(Cont)),
 	    io_request(Req, From, ReplyAs, Drv, []), %WRONG!!!
-	    send_drv_reqs(Drv, edlin:redraw_line(Cont)),
+	    send_drv_reqs(Drv, ?EDLIN:redraw_line(Cont)),
 	    get_line1({more_chars,Cont,[]}, Drv, Ls, Encoding);
 	{'EXIT',Drv,interrupt} ->
 	    interrupted;
@@ -627,7 +632,7 @@ more_data(What, Cont0, Drv, Ls, Encoding) ->
 	    terminated
     after
 	get_line_timeout(What)->
-	    get_line1(edlin:edit_line([], Cont0), Drv, Ls, Encoding)
+	    get_line1(?EDLIN:edit_line([], Cont0), Drv, Ls, Encoding)
     end.
 
 get_line_echo_off(Chars, Pbs, Drv) ->
