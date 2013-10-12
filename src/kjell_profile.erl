@@ -19,6 +19,7 @@
 	 terminate/2, code_change/3]).
 
 -define(SERVER, ?MODULE). 
+-define(LOG, kjell_log).
 
 -record(state, {text_attr = [], %% TODO: remove?
 	       settings = []}).
@@ -115,27 +116,30 @@ init([]) ->
 
 
 handle_call({load_profile, File}, _From, State) when is_list(File) ->
+    OldSettings = State#state.settings,
     case file:consult(File) of
 	{ok, Terms} ->
 	    TxtFmtStrs = case proplists:get_value(color_profile,Terms) of
 			     undefined -> % undefined, load default profile
-				 format_strs(default_colors(ansi));
+				 	?LOG:debug("Load default color profile"),
+				 	format_strs(default_colors(ansi));
 			     ColProf ->
-				 ProfDir = filename:dirname(File),
-				 ColProfFile = filename:join(ProfDir,ColProf),
+				 	ProfDir = filename:dirname(File),
+				 	ColProfFile = filename:join(ProfDir,ColProf),
+				 	?LOG:debug("Use color profile ~p", [ColProfFile]),
 				 case file:consult(ColProfFile) of
 				     {ok,ColTerms} ->
-					 format_strs(ColTerms);
+					 	format_strs(ColTerms);
 				     {error,Reason} ->
-					 io:format("Error reading color profile ~p: ~p~n",[ColProfFile,Reason]),
-					 format_strs(default_colors(ansi)) % error,  use default color profile
+					 	?LOG:error("Error reading color profile ~p: ~p~n",[ColProfFile,Reason]),
+					 	format_strs(default_colors(ansi)) % error,  use default color profile
 				 end
 			 end,
 	    
-	    {reply, ok, State#state{settings=[{text_attr,TxtFmtStrs}|Terms]}};
+ 	    {reply, ok, State#state{settings=[{text_attr,TxtFmtStrs}|Terms] ++ OldSettings}};
 
 	{error,Reason} ->
-	    io:format("Error loading profile ~p: ~p ~n",[File,Reason]),
+	    ?LOG:error("Error loading profile ~p: ~p ~n",[File,Reason]),
 	    default_profile(State)
     end;
 
@@ -147,14 +151,14 @@ handle_call({q_str,Class,Str}, _From, State) ->
     TxtAttr = proplists:get_value(text_attr,State#state.settings),
     Res = case DisableFlag of 
 	      true ->
-		  Str;
+		  	Str;
 	      _ ->
-		  case proplists:get_value(Class,TxtAttr) of
-		      undefined ->
-			  undefined;
-		      FmtStr ->
-			  lists:flatten(io_lib:format(FmtStr,[Str]))
-		  end
+			  case proplists:get_value(Class,TxtAttr) of
+			      undefined ->
+				  	undefined;
+			      FmtStr ->
+				  	lists:flatten(io_lib:format(FmtStr,[Str]))
+			  end
 	  end,
     {reply, {ok, Res}, State};
 
@@ -253,5 +257,6 @@ default_colors(ansi)->
     
 default_profile(State) ->
     TxtFmtStrs = format_strs(default_colors(ansi)),
-    Settings=[{text_attrs,TxtFmtStrs}],
+    OldSettings = State#state.settings,
+    Settings=[{text_attrs,TxtFmtStrs}| OldSettings],
     {reply, ok, State#state{settings=Settings}}.
