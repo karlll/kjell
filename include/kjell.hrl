@@ -66,4 +66,17 @@
 
 -define(EDLIN,edlin).
 
+% logging
+
+% log level definitions
+-define(LL_OFF,-1).
+-define(LL_ERROR, 1).
+-define(LL_WARN, 2).
+-define(LL_INFO, 3).
+-define(LL_DEBUG, 4).
+
+% log level
+-define(LL,?LL_INFO).
+
+
 
