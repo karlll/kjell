@@ -8,6 +8,7 @@
 -module(kjell_log).
 
 -compile([export_all]).
+-compile({no_auto_import,[error/2]}).
 -include("kjell.hrl").
 
 -define(INFO_LBL,"").
@@ -32,13 +33,13 @@ log(debug,Fmt,Arg) ->
 	out(?DEBUG_LBL,Fmt,Arg).
 
 info(Msg) ->
-	log(info,Msg,[]).
+	info(Msg,[]).
 warn(Msg) ->
-	log(warn,Msg,[]).
+	warn(Msg,[]).
 error(Msg) ->
-	log(error,Msg,[]).
+	error(Msg,[]).
 debug(Msg) ->
-	log(debug,Msg,[]).
+	debug(Msg,[]).
 
 info(Fmt,Arg) ->
 	log(info,Fmt,Arg).
