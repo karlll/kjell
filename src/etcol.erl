@@ -33,7 +33,7 @@ t_a([Line|T], Acc) ->
 t_a([],Acc) ->
     lists:flatten(lists:reverse(Acc)).
 
-  
+
 
 text_attr(ansi,reset)-> "0";
 text_attr(ansi,bright)-> "1";
@@ -56,7 +56,7 @@ text_attr(ansi,encircled)-> "52";
 text_attr(ansi,overlined)-> "52".
 
 
-fg_color(ansi,black) -> "30";	
+fg_color(ansi,black) -> "30";   
 fg_color(ansi,red) -> "31";
 fg_color(ansi,green) -> "32";
 fg_color(ansi,yellow) -> "33";
@@ -79,25 +79,25 @@ bg_color(ansi,default_bg) -> "49".
 % ****************************************************************
 
 test() ->
-
+    
     Colors = [ black, red, green, yellow, blue, magenta, cyan, white],
     Attrs = [ bright, dim, underscore, blink, reverse, hidden],
-
+    
     AllCombos = [ {A,F,B} || A <- Attrs, F <- Colors, B <- lists:reverse(Colors) ],
-
+    
     Disp = fun(AttrTuple) ->
-		   {Attr,Fg,Bg} = AttrTuple,
-		   {[{text_attr,Attr},
-		     {fg_color,Fg},
-		     {bg_color,Bg}], lists:concat([atom_to_list(Fg), 
-						   " on ", 
-						   atom_to_list(Bg), 
-						   " (",
-						   atom_to_list(Attr),
-						   ")", ?ANSI_CLEAR, "\n"])}
-	   end,
-
+            {Attr,Fg,Bg} = AttrTuple,
+            {[{text_attr,Attr},
+                    {fg_color,Fg},
+                    {bg_color,Bg}], lists:concat([atom_to_list(Fg), 
+                        " on ", 
+                        atom_to_list(Bg), 
+                        " (",
+                        atom_to_list(Attr),
+                        ")", ?ANSI_CLEAR, "\n"])}
+    end,
+    
     AllCombosAttr = lists:map(Disp,AllCombos),
     AllCombosStr = t_a(AllCombosAttr),
     io:format("~ts",[AllCombosStr]).
-    
+
