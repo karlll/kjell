@@ -12,16 +12,20 @@
       %% Text classes 
       %% { class, {text_attrib, foreground, background}}
 
+      % shell
+      {text,{bright,white,none}},
+      {prompt,{none,green,none}},
+      {warning,{dim,red,none}},
+      {error,{underscore,red,none}},
+      
+      % types
       {string,{none,yellow,none}},
       {digits,{none,green,none}},
       {keyword,{bright,magenta,none}},
-      {warning,{dim,red,none}},
-      {error,{underscore,red,none}},
       {term,{none,cyan,none}},
       {record_name,{none,magenta,none}},
       {record_field,{none,blue,none}},
       {function,{none,magenta,none}},
-      {prompt,{none,green,none}},
 
       %% Character colors
 

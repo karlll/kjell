@@ -25,7 +25,7 @@
 -export([start/2, start/3, server/3]).
 -export([interfaces/1]).
 
-
+-import(kjell_profile,[q/2]).
 
 
 start(Drv, Shell) ->
@@ -204,7 +204,8 @@ io_request(Req, From, ReplyAs, Drv, Buf0) ->
 io_request({put_chars,unicode,Chars}, Drv, Buf) ->
     case catch unicode:characters_to_binary(Chars,utf8) of
 	Binary when is_binary(Binary) ->
-	    Binary2 = unicode:characters_to_binary(lists:flatten(io_lib:format("\e[1;37m~ts\e[0m",[Chars])),utf8),
+	    %Binary2 = unicode:characters_to_binary(lists:flatten(io_lib:format("\e[1;37m~ts\e[0m",[Chars])),utf8),
+	    Binary2 = unicode:characters_to_binary(q(text,Chars),utf8),
 	    send_drv(Drv, {put_chars, unicode, Binary2}),
 	    {ok,ok,Buf};
 	_ ->
@@ -213,15 +214,16 @@ io_request({put_chars,unicode,Chars}, Drv, Buf) ->
 io_request({put_chars,unicode,M,F,As}, Drv, Buf) ->
     case catch apply(M, F, As) of
 	Binary when is_binary(Binary) ->
-	    Binary2 = lists:flatten(io_lib:format("\e[1;37m~ts\e[0m",[Binary])),
+	    %Binary2 = lists:flatten(io_lib:format("\e[1;37m~ts\e[0m",[Binary])),
+	    Binary2 = unicode:characters_to_binary(q(text,Binary),utf8),
 	    send_drv(Drv, {put_chars, unicode,Binary2}),
 	    {ok,ok,Buf};
 	Chars ->
 	    case catch unicode:characters_to_binary(Chars,utf8) of
 		B when is_binary(B) ->
-		    B2 = lists:flatten(io_lib:format("\e[1;37m~ts\e[0m",[B])),
+		    %B2 = lists:flatten(io_lib:format("\e[1;37m~ts\e[0m",[B])),
 
-		    send_drv(Drv, {put_chars, unicode,B2}),
+		    send_drv(Drv, {put_chars, unicode,q(text,B)}),
 		    {ok,ok,Buf};
 		_ ->
 		    {error,{error,F},Buf}
