@@ -41,7 +41,7 @@ Install extensions in user directory:
 ~~~   
   $ make install-extensions
 ~~~ 
-See http://karlll.github.com/kjell-extensions/
+See https://github.com/karlll/kjell-extensions
 
 ## Author
 
