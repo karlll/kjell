@@ -18,6 +18,8 @@
 %%
 -module(k_user_drv).
 
+-include("kjell.hrl").
+
 %% Basic interface to a port.
 
 -export([start/0,start/1,start/2,start/3,server/2,server/3]).
@@ -127,11 +129,15 @@ server1(Iport, Oport, Shell) ->
 
     put(current_group, Curr),
     Gr = gr_add_cur(Gr1, Curr, Shell1),
-    %% Print some information.
-    io_request({put_chars, unicode,
-		flatten(io_lib:format("~s\n",
-				      [erlang:system_info(system_version)]))},
-	       Iport, Oport),
+    case kjell_profile:get_value(supress_startup_info) of
+    	true -> ok; % skip printing information
+    	_ -> %% Print some information.
+    		io_request({put_chars, unicode,
+			flatten(io_lib:format("~s\n",
+					      [erlang:system_info(system_version)]))},
+	       	Iport, Oport)
+
+    end,
     %% Enter the server loop.
     server_loop(Iport, Oport, Curr, User, Gr).
 
@@ -286,7 +292,7 @@ handle_escape(Iport, Oport, User, Gr) ->
     end.
 
 switch_loop(Iport, Oport, Gr) ->
-    Line = get_line(edlin:start(" --> "), Iport, Oport),
+    Line = get_line(?EDLIN:start(" --> "), Iport, Oport),
     switch_cmd(erl_scan:string(Line), Iport, Oport, Gr).
 
 switch_cmd({ok,[{atom,_,c},{integer,_,I}],_}, Iport, Oport, Gr0) ->
@@ -436,17 +442,17 @@ get_line({done,Line,_Rest,Rs}, Iport, Oport) ->
 get_line({undefined,_Char,Cs,Cont,Rs}, Iport, Oport) ->
     io_requests(Rs, Iport, Oport),
     io_request(beep, Iport, Oport),
-    get_line(edlin:edit_line(Cs, Cont), Iport, Oport);
+    get_line(?EDLIN:edit_line(Cs, Cont), Iport, Oport);
 get_line({What,Cont0,Rs}, Iport, Oport) ->
     io_requests(Rs, Iport, Oport),
     receive
 	{Iport,{data,Cs}} ->
-	    get_line(edlin:edit_line(Cs, Cont0), Iport, Oport);
+	    get_line(?EDLIN:edit_line(Cs, Cont0), Iport, Oport);
 	{Iport,eof} ->
-	    get_line(edlin:edit_line(eof, Cont0), Iport, Oport)
+	    get_line(?EDLIN:edit_line(eof, Cont0), Iport, Oport)
     after
 	get_line_timeout(What) ->
-	    get_line(edlin:edit_line([], Cont0), Iport, Oport)
+	    get_line(?EDLIN:edit_line([], Cont0), Iport, Oport)
     end.
 
 get_line_timeout(blink) -> 1000;
