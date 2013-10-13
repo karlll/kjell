@@ -38,10 +38,10 @@ See http://karlll.github.com/kjell/
 ## Extensions
 
 Install extensions in user directory:
+~~~   
   $ make install-extensions
-
-See http://karlll.github.com/kjell/
-
+~~~ 
+See http://karlll.github.com/kjell-extensions/
 
 ## Author
 
