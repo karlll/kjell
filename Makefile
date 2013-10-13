@@ -1,4 +1,5 @@
 REBAR = ./rebar
+CFG_DIR = ~${USER}/.kjell
 
 all: compile
 
@@ -14,3 +15,7 @@ clean:
 	rm -rf logs
 ct:
 	@$(REBAR) ct suites=kjell_profile,kjell_extension
+
+install-extensions:
+	mkdir -p ${CFG_DIR}
+	cp -R ext/extensions ${CFG_DIR} 
