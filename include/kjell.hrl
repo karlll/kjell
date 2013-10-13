@@ -15,8 +15,12 @@
       % shell
       {text,{bright,white,none}},
       {prompt,{none,green,none}},
-      {warning,{dim,red,none}},
+      % log
+      {warning,{dim,yellow,none}},
       {error,{underscore,red,none}},
+      {info,{none,white,none}},
+
+
       
       % types
       {string,{none,yellow,none}},

@@ -16,6 +16,7 @@
 -define(ERROR_LBL,"[ERROR] ").
 -define(DEBUG_LBL,"[DEBUG] ").
 
+-import(kjell_profile,[q/2]).
 
 out(Msg, LogLevel) when LogLevel =< ?LL ->
 	io:format("~s\n", [Msg]);
@@ -27,11 +28,11 @@ out(Label,Fmt,Arg,LogLevel) ->
 	out(lists:flatten(Label,Fmt), Arg, LogLevel).
 
 log(info,Fmt,Arg) ->
-	out(?INFO_LBL,Fmt,Arg,?LL_INFO);
+	out(q(info,?INFO_LBL),Fmt,Arg,?LL_INFO);
 log(warn,Fmt,Arg) ->
-	out(?WARN_LBL,Fmt,Arg,?LL_WARN);
+	out(q(warning,?WARN_LBL),Fmt,Arg,?LL_WARN);
 log(error,Fmt,Arg) ->
-	out(?ERROR_LBL,Fmt,Arg,?LL_ERROR);
+	out(q(error,?ERROR_LBL),Fmt,Arg,?LL_ERROR);
 log(debug,Fmt,Arg) ->
 	out(?DEBUG_LBL,Fmt,Arg,?LL_DEBUG).
 
