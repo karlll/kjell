@@ -17,7 +17,7 @@
 </pre>
 						
 
-![Kjell](http://karlll.github.io/kjell/images/kjell_demo_1.png)
+![Kjell](http://karlll.github.io/kjell/images/kjell_demo_2.png)
 
 See http://karlll.github.com/kjell/
 
@@ -34,6 +34,14 @@ See http://karlll.github.com/kjell/
 ~~~
   $ bin/kjell
 ~~~
+
+## Extensions
+
+Install extensions in user directory:
+  $ make install-extensions
+
+See http://karlll.github.com/kjell/
+
 
 ## Author
 
