@@ -1,6 +1,6 @@
 {application, kjell,
  [
-  {description, ""},
+  {description, "An erlang shell"},
   {vsn, "0.2.0"},
   {registered, []},
   {applications, [
