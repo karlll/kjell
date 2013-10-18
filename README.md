@@ -3,7 +3,12 @@ Kjell
 
 Kjell - a refurbished Erlang shell						
 
-![Kjell](http://karlll.github.io/kjell/images/kjell_demo_2.png)
+
+Kjell on Solarized Dark
+![Kjell](http://karlll.github.io/kjell/images/kjell_demo_3_dark.png)
+
+Kjell on Solarized Light
+![Kjell](http://karlll.github.io/kjell/images/kjell_demo_3_light.png)
 
 See http://karlll.github.com/kjell/
 
@@ -29,7 +34,7 @@ Install extensions in user directory:
   $ make install-extensions
 ~~~ 
 
-See https://github.com/karlll/kjell-extensions for further information about extensions
+See https://github.com/karlll/kjell-extensions for further information about extensions.
 
 ## Author
 
