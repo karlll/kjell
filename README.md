@@ -1,14 +1,17 @@
 Kjell
 =====
 
-Kjell - a refurbished Erlang shell						
+Kjell - a refurbished Erlang shell with support for color profiles and extensions.						
 
+## Screens
 
-Kjell on Solarized Dark
+Kjell (dark profile) on Solarized Dark
 ![Kjell](http://karlll.github.io/kjell/images/kjell_demo_3_dark.png)
 
-Kjell on Solarized Light
+Kjell (light profile) on Solarized Light
 ![Kjell](http://karlll.github.io/kjell/images/kjell_demo_3_light.png)
+
+## Overview
 
 See http://karlll.github.com/kjell/
 
