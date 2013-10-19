@@ -18,6 +18,7 @@ See http://karlll.github.com/kjell/
 ## Dependencies
 
 * Erlang/OTP R16B01+
+* Extension `kjell-prompt`: Powerline patched font (https://github.com/Lokaltog/powerline-fonts)
 
 ## Build
 ~~~
@@ -38,6 +39,10 @@ Install extensions in user directory:
 ~~~ 
 
 See https://github.com/karlll/kjell-extensions for further information about extensions.
+
+## Documentation
+
+Please see the wiki, https://github.com/karlll/kjell/wiki
 
 ## Author
 
