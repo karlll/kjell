@@ -7,3 +7,4 @@ priv
 *.beam
 *.plt
 *~
+.DS_Store
