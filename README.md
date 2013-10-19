@@ -21,7 +21,7 @@ See http://karlll.github.com/kjell/
 
 ## Build
 ~~~
-  $ git clone https://github.com/karlll/kjell.git
+  $ git clone --recursive https://github.com/karlll/kjell.git
   $ make
 ~~~  
 
