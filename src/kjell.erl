@@ -43,6 +43,8 @@
 
 -define(MAXSIZE_HEAPBINARY, 64).
 
+-define(LOG,kjell_log).
+
 %% When used as the fallback restricted shell callback module...
 local_allowed(q,[],State) ->
     {true,State};
@@ -345,7 +347,7 @@ prompt(N, Eval0, Bs0, RT, Ds0) ->
 
 get_prompt_func() ->
     case kjell_extension:get_extension(prompt) of 
-        {{M,F}=PromptFuncExt, Desc} ->
+        {{_M,_F}=PromptFuncExt, _Desc} ->
             PromptFuncExt;
         [] ->
             case application:get_env(stdlib, shell_prompt_func) of
@@ -1110,17 +1112,22 @@ shell_default(F,As,Bs) ->
 		true ->
 		    {eval,erlang:make_fun(M,F,A),As,Bs};
 		false ->
-		    shell_undef(F,A)
+		    shell_undef(F,As,Bs)
 	    end;
 	{error, _} ->
-	    shell_undef(F,A)
+	    shell_undef(F,As,Bs)
     end.
 
-kjell_extension(F,As,Bs) ->
-    ok.
-
-shell_undef(F,A) ->
-    erlang:error({shell_undef,F,A}).
+% TODO: Test with f/2 when f/1 is an existing command 
+shell_undef(F,As,Bs) ->
+    ?LOG:debug("shell_undef(~p,~p,~p)",[F,As,Bs]),
+    case kjell_extension:activate({command,F},As) of
+        {ok,Result} -> 
+                {value,Result,Bs};
+        {error,undefined} -> erlang:error({shell_undef,F,length(As)});
+        {error,Msg} -> erlang:error({Msg,F,length(As)})
+    end.
+    
 
 local_func_handler(Shell, RT, Ef) ->
 

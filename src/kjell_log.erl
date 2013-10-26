@@ -20,7 +20,7 @@
 
 out(Msg, LogLevel) when LogLevel =< ?LL ->
 	io:format("~s\n", [Msg]);
-out(Msg, _LogLevel) ->
+out(_Msg, _LogLevel) ->
 	ok.
 out(Fmt,Arg,LogLevel) ->
 	out(io_lib:format(Fmt,Arg),LogLevel).

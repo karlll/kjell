@@ -49,7 +49,7 @@ activate({command,Cmd},InData) ->
 activate(ExtPoint,InData) ->
 	gen_server:call(?MODULE,{activate,ExtPoint,InData}).
 
--spec get_extension(ExtPoint::term()) -> {Module::term(),Function::term(),Desc::list()} | [].
+-spec get_extension(ExtPoint::atom()) -> {Module::atom(),Function::atom(),Desc::list()} | [].
 get_extension(ExtPoint) ->
 	case get_extensions(ExtPoint) of
 		[] -> 
@@ -58,16 +58,26 @@ get_extension(ExtPoint) ->
 			hd(Exts)
 	end.
 
--spec get_extensions(ExtPoint::term()) -> Extensions::list() | [].
+-spec get_extensions(ExtPoint::atom()) -> Extensions::list() | [].
 get_extensions(ExtPoint) ->
 	gen_server:call(?MODULE,{get_extensions,ExtPoint}).
 
--spec has_extensions(ExtPoint::term()) -> true | false.
+-spec has_extensions(ExtPoint::atom()) -> true | false; 
+	  				({command,Command::atom()}) -> true | false.
+
+
+has_extensions({command,Cmd}) ->
+	case get_cmd_ext(Cmd) of
+		undefined -> false;
+		_ -> true
+	end;
+
 has_extensions(ExtPoint) ->
 	case get_extension(ExtPoint) of
 		[] -> false;
 		_ -> true
 	end.
+
 
 
 %%%===================================================================
@@ -316,14 +326,14 @@ get_cmd_ext(Cmd) ->
 			{command,Extensions} = hd(List),
 			case Extensions of
 				T when is_tuple(T) ->
-					{{ExtMod,Fun},_} = T,
+					{{_ExtMod,Fun},_} = T,
 					case Fun of
 						Cmd ->
 							T;
 						_ -> undefined
 					end;
 				L when is_list(L) ->
-					Filter = fun({{ExtMod,Fun}, _}) ->
+					Filter = fun({{_ExtMod,Fun}, _}) ->
 							case Fun of
 								Cmd ->
 									true;
@@ -348,18 +358,18 @@ get_cmd_ext(Cmd) ->
 
 
 
-apply_extension({ExtPt,Exts},InData) when is_tuple(Exts) ->
-	{{M,F},Desc} = Exts,
+apply_extension({_ExtPt,Exts},InData) when is_tuple(Exts) ->
+	{{M,F},_Desc} = Exts,
 	Res = apply(M,F,[InData]),
 	Res;
 
-apply_extension({ExtPt,Exts},InData) when is_list(Exts) ->
-	{{M,F},Desc} = hd(Exts),
+apply_extension({_ExtPt,Exts},InData) when is_list(Exts) ->
+	{{M,F},_Desc} = hd(Exts),
 	Res = apply(M,F,[InData]),
 	Res.
 
 
-apply_extensions(Extensions,InData)->								 
+apply_extensions(_Extensions,InData)->								 
 	InData. %% todo
 
 
@@ -371,7 +381,7 @@ point_type(shell_output_line) -> single;
 point_type(prompt) -> single;
 point_type(startup) -> single;
 point_type(startup_msg) -> single;
-point_type(Other) -> none.
+point_type(_Other) -> none.
 
 
 

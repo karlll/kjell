@@ -113,7 +113,8 @@ all() ->
      cmd_undef,
      get_exts,
      get_ext,
-     get_ext_empty
+     get_ext_empty,
+     has_extension
     ].
 
 %%--------------------------------------------------------------------
@@ -259,6 +260,25 @@ get_ext_empty(Config) ->
     kjell_profile:stop(),
     kjell_extension:stop(),
     ok.
+
+
+has_extension() ->
+    [].
+has_extension(Config) ->
+    kjell_profile:start_link(),
+    kjell_extension:start_link(),
+    DataDir = proplists:get_value(data_dir,Config),
+    ok = load_exts(DataDir),
+    true = kjell_extension:has_extensions({command,cmd}),
+    false = kjell_extension:has_extensions({command,undef_cmd}),
+    true = kjell_extension:has_extensions(shell_output_line),
+    kjell_profile:stop(),
+    kjell_extension:stop(),
+    ok.
+
+
+%
+%
 
 load_exts(Path) ->
     ok = kjell_profile:load_profile(filename:join(Path,"kjell.config")),
