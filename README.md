@@ -22,7 +22,7 @@ See http://karlll.github.com/kjell/
 
 ## Build
 ~~~
-  $ git clone --recursive https://github.com/karlll/kjell.git
+  $ git clone --recursive https://github.com/karlll/kjell.git && cd kjell
   $ make
 ~~~  
 
@@ -50,4 +50,5 @@ karlll, <karl@ninjacontrol.com>
 
 ## Contributors
 
-Pedram Nimreezi <deadzen@deadzen.com>
+* Pedram Nimreezi <deadzen@deadzen.com>
+* Uwe Dauernheim <uwe@dauernheim.net>
