@@ -51,3 +51,4 @@ karlll, <karl@ninjacontrol.com>
 ## Contributors
 
 Pedram Nimreezi <deadzen@deadzen.com>
+Uwe Dauernheim <uwe@dauernheim.net>
