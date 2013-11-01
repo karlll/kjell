@@ -204,25 +204,38 @@ io_request(Req, From, ReplyAs, Drv, Buf0) ->
 io_request({put_chars,unicode,Chars}, Drv, Buf) ->
     case catch unicode:characters_to_binary(Chars,utf8) of
 	Binary when is_binary(Binary) ->
-	    %Binary2 = unicode:characters_to_binary(lists:flatten(io_lib:format("\e[1;37m~ts\e[0m",[Chars])),utf8),
 	    Binary2 = unicode:characters_to_binary(q(text,Chars),utf8),
 	    send_drv(Drv, {put_chars, unicode, Binary2}),
 	    {ok,ok,Buf};
 	_ ->
 	    {error,{error,{put_chars, unicode,Chars}},Buf}
     end;
-io_request({put_chars,unicode,M,F,As}, Drv, Buf) ->
-    case catch apply(M, F, As) of
+
+io_request({put_chars,unicode,io_lib,F,As}, Drv, Buf) ->
+    case catch apply(?IO_LIB, F, As) of
 	Binary when is_binary(Binary) ->
-	    %Binary2 = lists:flatten(io_lib:format("\e[1;37m~ts\e[0m",[Binary])),
 	    Binary2 = unicode:characters_to_binary(q(text,Binary),utf8),
 	    send_drv(Drv, {put_chars, unicode,Binary2}),
 	    {ok,ok,Buf};
 	Chars ->
 	    case catch unicode:characters_to_binary(Chars,utf8) of
 		B when is_binary(B) ->
-		    %B2 = lists:flatten(io_lib:format("\e[1;37m~ts\e[0m",[B])),
+		    send_drv(Drv, {put_chars, unicode,q(text,B)}),
+		    {ok,ok,Buf};
+		_ ->
+		    {error,{error,F},Buf}
+	    end
+    end;
 
+io_request({put_chars,unicode,M,F,As}, Drv, Buf) ->
+    case catch apply(M, F, As) of
+	Binary when is_binary(Binary) ->
+	    Binary2 = unicode:characters_to_binary(q(text,Binary),utf8),
+	    send_drv(Drv, {put_chars, unicode,Binary2}),
+	    {ok,ok,Buf};
+	Chars ->
+	    case catch unicode:characters_to_binary(Chars,utf8) of
+		B when is_binary(B) ->
 		    send_drv(Drv, {put_chars, unicode,q(text,B)}),
 		    {ok,ok,Buf};
 		_ ->
@@ -240,6 +253,22 @@ io_request({put_chars,latin1,Chars}, Drv, Buf) ->
 	_ ->
 	    {error,{error,{put_chars,latin1,Chars}},Buf}
     end;
+
+io_request({put_chars,latin1,io_lib,F,As}, Drv, Buf) ->
+    case catch apply(?IO_LIB, F, As) of
+	Binary when is_binary(Binary) ->
+	    send_drv(Drv, {put_chars, unicode,unicode:characters_to_binary(Binary,latin1)}),
+	    {ok,ok,Buf};
+	Chars ->
+	    case catch unicode:characters_to_binary(Chars,latin1) of
+		B when is_binary(B) ->
+		    send_drv(Drv, {put_chars, unicode,B}),
+		    {ok,ok,Buf};
+		_ ->
+		    {error,{error,F},Buf}
+	    end
+    end;
+
 io_request({put_chars,latin1,M,F,As}, Drv, Buf) ->
     case catch apply(M, F, As) of
 	Binary when is_binary(Binary) ->

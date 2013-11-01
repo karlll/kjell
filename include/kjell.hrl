@@ -4,7 +4,7 @@
 %%% @end
 
 
--define(VERSION,"0.2.0").
+-define(VERSION,"0.2.1").
 -define(BANNER,"Kjell v." ++ ?VERSION).
 
 -define(DEFAULT_COLORS,
@@ -73,6 +73,7 @@
 
 
 -define(EDLIN,edlin).
+-define(IO_LIB,io_lib).
 
 % logging
 

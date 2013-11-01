@@ -114,7 +114,9 @@ all() ->
      get_exts,
      get_ext,
      get_ext_empty,
-     has_extension
+     has_extension,
+     get_command_ext,
+     get_all_command_exts
     ].
 
 %%--------------------------------------------------------------------
@@ -276,6 +278,37 @@ has_extension(Config) ->
     kjell_extension:stop(),
     ok.
 
+get_command_ext() ->
+    [].
+get_command_ext(Config) ->
+    kjell_profile:start_link(),
+    kjell_extension:start_link(),
+    DataDir = proplists:get_value(data_dir,Config),
+    ok = load_exts(DataDir),
+    {{test_cmd,cmd_error},"Test command 2"} = kjell_extension:get_command_extension(cmd_error),
+    undefined = kjell_extension:get_command_extension(cmd_undef),
+    {{test_cmd,cmd},_} = kjell_extension:get_command_extension(cmd), % return only one
+    kjell_profile:stop(),
+    kjell_extension:stop(),
+    ok.
+
+get_all_command_exts() ->
+    [].
+get_all_command_exts(Config) ->
+    kjell_profile:start_link(),
+    kjell_extension:start_link(),
+    DataDir = proplists:get_value(data_dir,Config),
+    ok = load_exts(DataDir),
+    ExpectedCmdExts = 
+        [
+            {{test_cmd,cmd_error},"Test command 2"},
+            {{test_cmd,cmd},"Test command"},
+            {{test_extension2,cmd}, "Test command 2 (test_cmd contains the same command)"}
+        ],
+    ExpectedCmdExts = kjell_extension:get_all_command_extensions(),
+    kjell_profile:stop(),
+    kjell_extension:stop(),
+    ok.
 
 %
 %

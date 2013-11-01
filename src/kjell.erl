@@ -1103,6 +1103,22 @@ non_builtin_local_func(F,As,Bs) ->
 	    shell_default(F,As,Bs)
     end.
 
+
+shell_default(F = help,As,Bs) ->
+    M = shell_default,
+    A = length(As),
+    case code:ensure_loaded(M) of
+    {module, _} ->
+        case erlang:function_exported(M,F,A) of
+        true ->
+            {value,help(),Bs};
+        false ->
+            shell_undef(F,As,Bs)
+        end;
+    {error, _} ->
+        shell_undef(F,As,Bs)
+    end;
+
 shell_default(F,As,Bs) ->
     M = shell_default,
     A = length(As),
@@ -1118,16 +1134,28 @@ shell_default(F,As,Bs) ->
 	    shell_undef(F,As,Bs)
     end.
 
-% TODO: Test with f/2 when f/1 is an existing command 
 shell_undef(F,As,Bs) ->
     ?LOG:debug("shell_undef(~p,~p,~p)",[F,As,Bs]),
-    case kjell_extension:activate({command,F},As) of
-        {ok,Result} -> 
-                {value,Result,Bs};
-        {error,undefined} -> erlang:error({shell_undef,F,length(As)});
-        {error,Msg} -> erlang:error({Msg,F,length(As)})
+    case kjell_extension:has_extensions({command,F}) of 
+        false -> erlang:error({shell_undef,F,length(As)});
+        true -> kjell_command(F,As,Bs)
     end.
-    
+
+% F is a registered command extension
+kjell_command(F,As,Bs) ->
+    {{M,F},Desc} = kjell_extension:get_command_extension(F),
+    ?LOG:debug("command extension {~p:~p} \"~s\"",[M,F,Desc]),
+    {eval,erlang:make_fun(M,F,length(As)),As,Bs}.
+
+help() ->
+    shell_default:help(),
+    io:format("** kjell command extensions **~n",[]),
+    H = fun({{_M,_F}, Desc}) ->
+        io:format("~s~n",[Desc])
+    end,
+    lists:foreach(H,kjell_extension:get_all_command_extensions()),
+    ok.
+
 
 local_func_handler(Shell, RT, Ef) ->
 

@@ -49,6 +49,16 @@ activate({command,Cmd},InData) ->
 activate(ExtPoint,InData) ->
 	gen_server:call(?MODULE,{activate,ExtPoint,InData}).
 
+get_command_extension(Cmd) ->
+	gen_server:call(?MODULE,{get_command_extension,Cmd,true}).	
+
+get_all_command_extensions(Cmd) ->
+	gen_server:call(?MODULE,{get_command_extension,Cmd,false}).	
+
+get_all_command_extensions() ->
+	gen_server:call(?MODULE,{get_extensions,command}).	
+
+
 -spec get_extension(ExtPoint::atom()) -> {Module::atom(),Function::atom(),Desc::list()} | [].
 get_extension(ExtPoint) ->
 	case get_extensions(ExtPoint) of
@@ -150,6 +160,19 @@ handle_call({get_extensions,ExtPoint}, _From, State)->
 		[{ExtPoint,Extensions}] when is_list(Extensions) ->
 			{reply, Extensions, State}
 	end;
+
+handle_call({get_command_extension,Cmd,Single}, _From, State)->
+	case get_cmd_ext(Cmd) of 
+		undefined ->
+			{reply, undefined, State};
+		SingleExt when is_tuple(SingleExt) ->
+			{reply, SingleExt, State};
+		Exts when is_list(Exts), Single == true -> % return first
+			{reply, hd(Exts), State};
+		Exts when is_list(Exts), Single == false -> % return all
+			{reply, Exts, State}
+	end;
+
 
 handle_call(stop, _From, State) ->
 	{stop, normal, shutdown_ok, State}.
