@@ -25,6 +25,7 @@ configure:
 	@rm -rf priv/prefix
 ifdef PREFIX
 	@echo "Setting installation dir to ${PREFIX}"
+	@mkdir -p priv
 	@echo ${PREFIX} > priv/prefix
 endif 
 
