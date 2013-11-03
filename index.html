@@ -69,21 +69,41 @@ $ git clone --recursive https://github.com/karlll/kjell.git
 $ cd kjell
 $ make
 </code></pre>
+
+<h3>Install</h3>
+<p>To install Kjell in the default location (<code>/usr/local/opt</code>) run :</p>
+
+<pre>
+<code>
+$ make install
+</code></pre>
+
+<h4>Install to alternate location</h4>
+<p>To install Kjell to location other than default :</p>
+
+<pre>
+<code>
+$ make configure PREFIX=&lt;alternate path&gt;
+$ make install
+</code></pre>
+
 <h3>Run</h3>
-<p>To start kjell, run the following in the same directory as the above.</p>
-<pre><code>bin/kjell</code></pre>
+<p>When installed, execute <code>kjell</code> in your terminal. If you did not install, run <code>bin/kjell</code> from the build directory.</p>
 
 <h3>Dependencies</h3>
 <ul>
+<li>sed</li>
 <li>make</li>
 <li>Erlang/OTP R16B01+</li>
 <li>A power-line patched font (for using extension <i>kjell-prompt</i>). See <a href="https://github.com/Lokaltog/powerline-fonts">github.com/Lokaltog/powerline-fonts</a></li>
 </ul>
 
-As of now, Kjell only supports Unix and MacOs</p>
+As of now, Kjell only supports Linux and MacOs</p>
 
 <h3>Version information</h3>
 <ul>
+  <li>0.2.2 - Minor installation update</li>
+  <li>0.2.1 - Command extension support</li>
   <li>0.2.0 - Extension support, no custom OTP build needed</li>
   <li>0.1.0 - Initial version</li>
 </ul>
@@ -92,6 +112,7 @@ As of now, Kjell only supports Unix and MacOs</p>
 <p> 
 <a href="https://github.com/karlll" class="user-mention">karlll</a>, &lt;karl@ninjacontrol.com&gt;<br/>
 <a href="https://github.com/DeadZen" class="user-mention">Pedram Nimreezi</a>, &lt;deadzen@deadzen.com&gt;<br/>
+<a href="https://github.com/djui" class="user-mention">Uwe Dauernheim</a>, &lt;uwe@dauernheim.net&gt;<br/>
 <br/>
 Code is based on modules from the OTP distribution.
 </p>
