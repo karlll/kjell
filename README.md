@@ -26,10 +26,22 @@ See http://karlll.github.com/kjell/
   $ make
 ~~~  
 
+## Install
+
+After building:
+~~~
+  $ make install
+~~~  
+
+### Install to alternate location
+~~~
+  $ make configure PREFIX=<alternate path>
+  $ make install
+~~~  
+
 ## Run
-~~~
-  $ bin/kjell
-~~~
+
+If installed, execute `kjell` in terminal, otherwise, `<build_dir>/bin/kjell`
 
 ## Extensions
 
