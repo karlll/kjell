@@ -64,3 +64,10 @@ karlll, <karl@ninjacontrol.com>
 
 * Pedram Nimreezi <deadzen@deadzen.com>
 * Uwe Dauernheim <uwe@dauernheim.net>
+
+## Build status
+
+* Main branch (no yet)
+* Development branch : [![Build Status](https://travis-ci.org/karlll/kjell.png?branch=develop)](https://travis-ci.org/karlll/kjell)
+
+
