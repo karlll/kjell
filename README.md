@@ -20,20 +20,28 @@ See http://karlll.github.com/kjell/
 * Erlang/OTP R16B01+
 * Extension `kjell-prompt`: Powerline patched font (https://github.com/Lokaltog/powerline-fonts)
 
-## Build
+## Install
+
+### Mac: Install using Hombrew
+
+~~~
+  $ brew install kjell
+~~~  
+
+### Linux: Build and install
+
+#### Build
 ~~~
   $ git clone --recursive https://github.com/karlll/kjell.git && cd kjell
   $ make
 ~~~  
-
-## Install
 
 After building:
 ~~~
   $ make install
 ~~~  
 
-### Install to alternate location
+#### Install to alternate location
 ~~~
   $ make configure PREFIX=<alternate path>
   $ make install
@@ -64,3 +72,10 @@ karlll, <karl@ninjacontrol.com>
 
 * Pedram Nimreezi <deadzen@deadzen.com>
 * Uwe Dauernheim <uwe@dauernheim.net>
+
+## Build status
+
+* Main branch : [![Build Status](https://travis-ci.org/karlll/kjell.png?branch=master)](https://travis-ci.org/karlll/kjell)
+* Development branch : [![Build Status](https://travis-ci.org/karlll/kjell.png?branch=develop)](https://travis-ci.org/karlll/kjell)
+
+
