@@ -28,12 +28,26 @@ See http://karlll.github.com/kjell/
 
 ## Install
 
+### Install on Mac using Hombrew
+
+~~~
+  $ brew install kjell
+~~~  
+
+### Build and install on Linux
+
+#### Build
+~~~
+  $ git clone --recursive https://github.com/karlll/kjell.git && cd kjell
+  $ make
+~~~  
+
 After building:
 ~~~
   $ make install
 ~~~  
 
-### Install to alternate location
+#### Install to alternate location
 ~~~
   $ make configure PREFIX=<alternate path>
   $ make install
@@ -67,7 +81,7 @@ karlll, <karl@ninjacontrol.com>
 
 ## Build status
 
-* Main branch (no yet)
+* Main branch : [![Build Status](https://travis-ci.org/karlll/kjell.png?branch=master)](https://travis-ci.org/karlll/kjell)
 * Development branch : [![Build Status](https://travis-ci.org/karlll/kjell.png?branch=develop)](https://travis-ci.org/karlll/kjell)
 
 
