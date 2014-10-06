@@ -1,7 +1,7 @@
 Kjell
 =====
 
-Kjell - a refurbished Erlang shell with support for color profiles and extensions.						
+Kjell - a refurbished Erlang shell with support for color profiles and extensions.
 
 ## Screens
 
@@ -54,9 +54,9 @@ If installed, execute `kjell` in terminal, otherwise, `<build_dir>/bin/kjell`
 ## Extensions
 
 Install extensions in user directory:
-~~~   
+~~~
   $ make install-extensions
-~~~ 
+~~~
 
 See https://github.com/karlll/kjell-extensions for further information about extensions.
 
@@ -72,10 +72,9 @@ karlll, <karl@ninjacontrol.com>
 
 * Pedram Nimreezi <deadzen@deadzen.com>
 * Uwe Dauernheim <uwe@dauernheim.net>
+* Dylan MacKenzie <dylanmackenzie@gmail.com>
 
 ## Build status
 
 * Main branch : [![Build Status](https://travis-ci.org/karlll/kjell.png?branch=master)](https://travis-ci.org/karlll/kjell)
 * Development branch : [![Build Status](https://travis-ci.org/karlll/kjell.png?branch=develop)](https://travis-ci.org/karlll/kjell)
-
-
