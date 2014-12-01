@@ -73,6 +73,7 @@ karlll, <karl@ninjacontrol.com>
 * Pedram Nimreezi <deadzen@deadzen.com>
 * Uwe Dauernheim <uwe@dauernheim.net>
 * Dylan MacKenzie <dylanmackenzie@gmail.com>
+* Julien Barbot
 
 ## How to contribute
 
