@@ -9,7 +9,7 @@ all: compile
 
 test: compile ct
 
-compile: 
+compile:
 	@$(REBAR) compile
 
 clean:
@@ -25,8 +25,9 @@ configure:
 	@rm -rf priv/prefix
 ifdef PREFIX
 	@echo "Setting installation dir to ${PREFIX}"
+	@mkdir -p priv
 	@echo ${PREFIX} > priv/prefix
-endif 
+endif
 
 install:
 	@echo "Installing in ${INSTALL_DIR}"
@@ -40,4 +41,4 @@ endif
 
 install-extensions:
 	@mkdir -p ${CFG_DIR}
-	@cp -R ext/extensions ${CFG_DIR} 
+	@cp -R ext/extensions ${CFG_DIR}
