@@ -9,3 +9,4 @@ priv
 *~
 .rebar
 .DS_Store
+backup/

@@ -74,6 +74,18 @@ karlll, <karl@ninjacontrol.com>
 * Uwe Dauernheim <uwe@dauernheim.net>
 * Dylan MacKenzie <dylanmackenzie@gmail.com>
 
+## How to contribute
+
+Got new features, bugfixes, extensions? Great! Please do the following:
+
+* Clone the repo
+* Check out the development branch
+* Hack stuff
+* Add yourself to the CONTRIBUTORs
+* Submit your pull request to the development branch
+
+If appropriate, please extend the current test suites or add new ones.
+
 ## Build status
 
 * Main branch : [![Build Status](https://travis-ci.org/karlll/kjell.png?branch=master)](https://travis-ci.org/karlll/kjell)
