@@ -2,6 +2,5 @@
 
 
 SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-EBIN_DIR="${SCRIPT_DIR}/ebin"
-
+EBIN_DIR="${SCRIPT_DIR}/../ebin"
 erl -noinput -pa ${EBIN_DIR} -run start_kjell $@
