@@ -4,12 +4,12 @@
 %%% @end
 
 
--define(VERSION,"0.2.1").
+-define(VERSION,"0.2.2").
 -define(BANNER,"Kjell v." ++ ?VERSION).
 
 -define(DEFAULT_COLORS,
-    [ 
-      %% Text classes 
+    [
+      %% Text classes
       %% { class, {text_attrib, foreground, background}}
 
       % shell
@@ -21,7 +21,7 @@
       {info,{none,white,none}},
 
 
-      
+
       % types
       {string,{none,yellow,none}},
       {digits,{none,green,none}},
@@ -86,6 +86,3 @@
 
 % log level
 -define(LL,?LL_INFO).
-
-
-
