@@ -19,7 +19,7 @@ clean:
 	@rm -rf logs
 	@rm -rf priv/*
 ct:
-	@$(REBAR) ct suites=kjell_profile,kjell_extension
+	@$(REBAR) -v ct suites=kjell_profile,kjell_extension
 
 configure:
 	@rm -rf priv/prefix
@@ -32,7 +32,7 @@ install:
 	@echo "Installing in ${INSTALL_DIR}"
 	@mkdir -p ${INSTALL_DIR}
 	@cp -R * ${INSTALL_DIR}
-	@sed -i.bak "s|^EBIN_DIR=\(.*\)|EBIN_DIR=${INSTALL_DIR}/ebin|" ${INSTALL_DIR}/bin/kjell && rm ${INSTALL_DIR}/bin/kjell.bak
+	@sed -i'.bak' "s|^EBIN_DIR=\(.*\)|EBIN_DIR=${INSTALL_DIR}/ebin|" ${INSTALL_DIR}/bin/kjell && rm ${INSTALL_DIR}/bin/kjell.bak
 ifndef NO_SYMLINK
 	@echo "Creatink symbolic link ${BIN_DIR}/kjell -> ${INSTALL_DIR}/bin/kjell"
 	@ln -sf ${INSTALL_DIR}/bin/kjell ${BIN_DIR}/kjell

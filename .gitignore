@@ -7,4 +7,5 @@ priv
 *.beam
 *.plt
 *~
+.rebar
 .DS_Store
