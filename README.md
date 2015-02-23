@@ -74,6 +74,7 @@ karlll, <karl@ninjacontrol.com>
 * Uwe Dauernheim <uwe@dauernheim.net>
 * Dylan MacKenzie <dylanmackenzie@gmail.com>
 * Julien Barbot
+* Andrzej Trawiński <andrzej.trawinski@jtendo.com>
 
 ## How to contribute
 
