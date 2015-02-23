@@ -37,7 +37,11 @@ start(Drv, Shell, Options) ->
 server(Drv, Shell, Options) ->
     process_flag(trap_exit, true),
     ?EDLIN:init(),
-    put(line_buffer, proplists:get_value(line_buffer, Options, [])),
+    Buffer = case check_history_support() of
+                 true -> group_history:load();
+                 false -> []
+             end,
+    put(line_buffer, proplists:get_value(line_buffer, Options, Buffer)),
     put(read_mode, list),
     put(user_drv, Drv),
     put(expand_fun,
@@ -786,6 +790,7 @@ save_line_buffer("\n", Lines) ->
 save_line_buffer(Line, [Line|_Lines]=Lines) ->
     save_line_buffer(Lines);
 save_line_buffer(Line, Lines) ->
+    get(history) andalso group_history:add(Line),
     save_line_buffer([Line|Lines]).
 
 save_line_buffer(Lines) ->
@@ -872,3 +877,14 @@ append(L1, L2, _) when is_list(L1) ->
     L1++L2;
 append(_Eof, L, _) ->
     L.
+
+check_history_support() ->
+    try group_history:module_info() of
+        _ ->
+            put(history, true),
+            true
+    catch
+        error:undef ->
+            put(history, false),
+            false
+    end.
