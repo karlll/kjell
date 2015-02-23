@@ -4,7 +4,7 @@
 %%% @end
 
 
--define(VERSION,"0.2.3").
+-define(VERSION,"0.2.4").
 -define(BANNER,"Kjell v." ++ ?VERSION).
 
 -define(DEFAULT_COLORS,
