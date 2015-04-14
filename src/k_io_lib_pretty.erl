@@ -394,7 +394,7 @@ print_length(Tuple, D, RF, Enc, Str) when is_tuple(Tuple) ->
 print_length(<<>>, _D, _RF, _Enc, _Str) ->
     { q(empty_bstr,"<<>>"), 4};
 print_length(<<_/bitstring>>, 1, _RF, _Enc, _Str) ->
-    { lists:join(q(bstr_start,"<<"), 
+    { lists:concat(q(bstr_start,"<<"),
 		 q(elipsis,"..."),
 		 q(bstr_end,">>")), 7};
 print_length(<<_/bitstring>>=Bin, D, _RF, Enc, Str) ->
