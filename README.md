@@ -76,6 +76,7 @@ karlll, <karl@ninjacontrol.com>
 * Julien Barbot
 * Andrzej Trawiński <andrzej.trawinski@jtendo.com>
 * Danila Fedyaschin <danilagamma@gmail.com>
+* gen_ale_drinker <michael.coles@gmail.com>
 
 ## How to contribute
 
