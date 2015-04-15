@@ -75,6 +75,8 @@ karlll, <karl@ninjacontrol.com>
 * Dylan MacKenzie <dylanmackenzie@gmail.com>
 * Julien Barbot
 * Andrzej Trawiński <andrzej.trawinski@jtendo.com>
+* Danila Fedyaschin <danilagamma@gmail.com>
+* gen_ale_drinker <michael.coles@gmail.com>
 
 ## How to contribute
 
