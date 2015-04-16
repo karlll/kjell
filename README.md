@@ -3,11 +3,14 @@ Kjell
 
 Kjell - a refurbished Erlang shell with support for color profiles and extensions.
 
+[![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=karlll&url=https://github.com/karlll/kjell&title=kjell&language=erlang&tags=github&category=software)
 
 ### Build status
 
 * Main branch : [![Build Status](https://travis-ci.org/karlll/kjell.png?branch=master)](https://travis-ci.org/karlll/kjell)
 * Development branch : [![Build Status](https://travis-ci.org/karlll/kjell.png?branch=develop)](https://travis-ci.org/karlll/kjell)
+
+
 
 ## Screens
 
