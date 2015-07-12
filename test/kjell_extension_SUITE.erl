@@ -289,7 +289,7 @@ get_command_ext(Config) ->
     undefined = kjell_extension:get_command_extension(cmd_undef),
     Actual = kjell_extension:get_command_extension(cmd), % return only one
     ct:pal("Got command ext = ~p", [Actual]),
-    {{test_cmd,cmd},_} = Actual,
+    {_MF,_Desc} = Actual,
     kjell_profile:stop(),
     kjell_extension:stop(),
     ok.
@@ -302,12 +302,12 @@ get_all_command_exts(Config) ->
     DataDir = proplists:get_value(data_dir,Config),
     ok = load_exts(DataDir),
     ExpectedCmdExts =
-        [
+        lists:keysort(2,[
             {{test_cmd,cmd_error},"Test command 2"},
             {{test_cmd,cmd},"Test command"},
             {{test_extension2,cmd}, "Test command 2 (test_cmd contains the same command)"}
-        ],
-    ActualCmdExts = kjell_extension:get_all_command_extensions(),
+        ]),
+    ActualCmdExts = lists:keysort(2,kjell_extension:get_all_command_extensions()),
     ct:pal("Got command exts = ~p", [ActualCmdExts]),
     ExpectedCmdExts = ActualCmdExts,
     kjell_profile:stop(),
