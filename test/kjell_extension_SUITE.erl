@@ -103,7 +103,7 @@ groups() ->
 %% Reason = term()
 %% @end
 %%--------------------------------------------------------------------
-all() -> 
+all() ->
     [
      load_extension,
      activate_ext_point,
@@ -124,7 +124,7 @@ all() ->
 %% Info = [tuple()]
 %% @end
 %%--------------------------------------------------------------------
-load_extension() -> 
+load_extension() ->
     [].
 
 %%--------------------------------------------------------------------
@@ -136,7 +136,7 @@ load_extension() ->
 %% Comment = term()
 %% @end
 %%--------------------------------------------------------------------
-load_extension(Config) -> 
+load_extension(Config) ->
     kjell_profile:start_link(),
     kjell_extension:start_link(),
     DataDir = proplists:get_value(data_dir,Config),
@@ -287,7 +287,9 @@ get_command_ext(Config) ->
     ok = load_exts(DataDir),
     {{test_cmd,cmd_error},"Test command 2"} = kjell_extension:get_command_extension(cmd_error),
     undefined = kjell_extension:get_command_extension(cmd_undef),
-    {{test_cmd,cmd},_} = kjell_extension:get_command_extension(cmd), % return only one
+    Actual = kjell_extension:get_command_extension(cmd), % return only one
+    ct:pal("Got command ext = ~p", [Actual]),
+    {_MF,_Desc} = Actual,
     kjell_profile:stop(),
     kjell_extension:stop(),
     ok.
@@ -299,13 +301,15 @@ get_all_command_exts(Config) ->
     kjell_extension:start_link(),
     DataDir = proplists:get_value(data_dir,Config),
     ok = load_exts(DataDir),
-    ExpectedCmdExts = 
-        [
+    ExpectedCmdExts =
+        lists:keysort(2,[
             {{test_cmd,cmd_error},"Test command 2"},
             {{test_cmd,cmd},"Test command"},
             {{test_extension2,cmd}, "Test command 2 (test_cmd contains the same command)"}
-        ],
-    ExpectedCmdExts = kjell_extension:get_all_command_extensions(),
+        ]),
+    ActualCmdExts = lists:keysort(2,kjell_extension:get_all_command_extensions()),
+    ct:pal("Got command exts = ~p", [ActualCmdExts]),
+    ExpectedCmdExts = ActualCmdExts,
     kjell_profile:stop(),
     kjell_extension:stop(),
     ok.
@@ -321,5 +325,3 @@ load_exts(Path) ->
     kjell_extension:init_extensions(FullExtensionPath),
     ct:pal("All = ~p",[ets:all()]),
     ok.
-
-

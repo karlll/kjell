@@ -3,6 +3,13 @@ Kjell
 
 Kjell - a refurbished Erlang shell with support for color profiles and extensions.
 
+### Build status
+
+* Main branch : [![Build Status](https://travis-ci.org/karlll/kjell.png?branch=master)](https://travis-ci.org/karlll/kjell)
+* Development branch : [![Build Status](https://travis-ci.org/karlll/kjell.png?branch=develop)](https://travis-ci.org/karlll/kjell)
+
+
+
 ## Screens
 
 Kjell (dark profile) on Solarized Dark
@@ -90,7 +97,4 @@ Got new features, bugfixes, extensions? Great! Please do the following:
 
 If appropriate, please extend the current test suites or add new ones.
 
-## Build status
 
-* Main branch : [![Build Status](https://travis-ci.org/karlll/kjell.png?branch=master)](https://travis-ci.org/karlll/kjell)
-* Development branch : [![Build Status](https://travis-ci.org/karlll/kjell.png?branch=develop)](https://travis-ci.org/karlll/kjell)

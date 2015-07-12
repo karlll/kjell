@@ -1,7 +1,7 @@
 %%%-------------------------------------------------------------------
 %%% @author karl l <karl@ninjacontrol.com>
 %%% @doc
-%%%   
+%%%
 %%% @end
 %%%-------------------------------------------------------------------
 
@@ -23,15 +23,18 @@ start() ->
 
 	case setup() of
 		ok -> ok;
-		{error, Reason} -> 
+		{error, Reason} ->
 			?LOG:error(Reason),
 			exit(error)
 	end,
 	case kjell_extension:activate(startup, []) of % extension point = startup
 		{error, Msg} -> ?LOG:error(Msg);
-		_ -> ok 
+		_ -> ok
 	end,
-	k_user_drv:start([?TTY_DRV,{kjell,start,[init]}]),
+	case init:get_argument(sanity_check) of
+		error -> k_user_drv:start([?TTY_DRV,{kjell,start,[init]}]);
+		_ -> k_user_drv:start([?TTY_DRV,{kjell,start,[sanity_check]}])
+	end,
 	ok.
 
 setup() ->
@@ -55,7 +58,7 @@ config(get_cfg) ->
 					ok = config(get_ext_dir,CfgDir);
 				{error,not_found} ->
 					case create_default_cfg_file(CfgDir) of
-						ok -> 
+						ok ->
 							Cfg = filename:join(CfgDir,?CFG_FILE),
 							create_default_colprof(CfgDir),
 							ok = kjell_profile:load_profile(Cfg),
@@ -125,7 +128,7 @@ get_cfg_dir() ->
 				{win32,_} ->
 					TempDir = case os:getenv("TEMP") of
 						false ->
-							"."; 
+							".";
 						Tmp ->
 							Tmp
 					end,
@@ -138,27 +141,27 @@ get_cfg_dir() ->
 	case filelib:ensure_dir(CfgDir) of
 		ok ->
 			case file:make_dir(CfgDir) of
-				ok -> 
+				ok ->
 					{ok, CfgDir};
 				{error,eexist} ->
 					{ok, CfgDir}; % already exists
 				{error, Reason} ->
-					Msg = io_lib:format("Error creating config dir = ~s : ~s",[CfgDir,Reason]), 
+					Msg = io_lib:format("Error creating config dir = ~s : ~s",[CfgDir,Reason]),
 					{error,Msg}
 			end;
-		
+
 		{error, Reason} ->
-			Msg = io_lib:format("Error in path = ~s : ~s",[CfgDir,Reason]), 
+			Msg = io_lib:format("Error in path = ~s : ~s",[CfgDir,Reason]),
 			{error,Msg}
 	end.
 
 
-create_default_cfg_file(Path)->	        
+create_default_cfg_file(Path)->
 	CfgFile = filename:join(Path,?CFG_FILE),
 	case file:open(CfgFile,[write]) of
 		{ok, File} ->
 			try lists:map(fun(L) -> file:write(File,lists:flatten(io_lib:format("~p.~n",[L]))) end, default_config()) of
-				_Res -> 
+				_Res ->
 					ok
 			catch
 				Class:Reason ->
@@ -175,17 +178,17 @@ create_default_ext_dir(Path)->
 	case filelib:ensure_dir(ExtPath) of
 		ok ->
 			case file:make_dir(ExtPath) of
-				ok -> 
+				ok ->
 					{ok, ExtPath};
 				{error,eexist} ->
 					{ok, ExtPath}; % already exists
 				{error, Reason} ->
-					Msg = io_lib:format("Error creating extension dir = ~s : ~s",[ExtPath,Reason]), 
+					Msg = io_lib:format("Error creating extension dir = ~s : ~s",[ExtPath,Reason]),
 					{error,Msg}
 			end;
-		
+
 		{error, Reason} ->
-			Msg = io_lib:format("Error in path = ~s : ~s",[ExtPath,Reason]), 
+			Msg = io_lib:format("Error in path = ~s : ~s",[ExtPath,Reason]),
 			{error,Msg}
 	end.
 
@@ -196,7 +199,7 @@ create_default_colprof(Path)->
 	case file:open(ProfFile,[write]) of
 		{ok, File} ->
 			try lists:map(fun(L) -> file:write(File,lists:flatten(io_lib:format("~p.~n",[L]))) end, default_col_prof()) of
-				_Res -> 
+				_Res ->
 					ok
 			catch
 				Class:Reason ->
@@ -215,13 +218,16 @@ create_default_colprof(Path)->
 default_col_prof() ->
 	?DEFAULT_COLORS.
 
-default_config() ->		    
+default_config() ->
 	[
 		{ext_dir,?EXT_DIR},
 		{color_profile,?COL_PROF}
 		].
 
+%
+% Homebrew: Enable testing of homebrew formula
+%
 
-
-
-
+test() ->
+	io:format("ok"),
+	erlang:halt().
