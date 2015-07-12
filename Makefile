@@ -19,7 +19,7 @@ clean:
 	@rm -rf logs
 	@rm -rf priv/*
 ct:
-	@$(REBAR) -v ct suites=kjell_profile,kjell_extension
+	@$(REBAR) ct suites=kjell_profile,kjell_extension
 
 configure:
 	@rm -rf priv/prefix
