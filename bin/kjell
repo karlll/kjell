@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 
 SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 EBIN_DIR="${SCRIPT_DIR}/../ebin"
-erl -noinput -pa ${EBIN_DIR} -run start_kjell $@
+erl -noinput -nouser -pa ${EBIN_DIR} -run start_kjell $@
