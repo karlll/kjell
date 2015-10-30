@@ -84,6 +84,7 @@ karlll, <karl@ninjacontrol.com>
 * Andrzej Trawiński <andrzej.trawinski@jtendo.com>
 * Danila Fedyaschin <danilagamma@gmail.com>
 * gen_ale_drinker <michael.coles@gmail.com>
+* Jean-Sébastien Pédron <jean-sebastien.pedron@dumbbell.fr>
 
 ## How to contribute
 
