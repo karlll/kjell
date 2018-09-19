@@ -73,17 +73,18 @@ Please see the wiki, https://github.com/karlll/kjell/wiki
 
 ## Author
 
-karlll, <karl@ninjacontrol.com>
+Karl Larsaeus, <karl@ninjacontrol.com>
 
 ## Contributors
 
-* Pedram Nimreezi <deadzen@deadzen.com>
-* Uwe Dauernheim <uwe@dauernheim.net>
-* Dylan MacKenzie <dylanmackenzie@gmail.com>
+* Pedram Nimreezi, <deadzen@deadzen.com>
+* Uwe Dauernheim, <uwe@dauernheim.net>
+* Dylan MacKenzie, <dylanmackenzie@gmail.com>
 * Julien Barbot
-* Andrzej Trawiński <andrzej.trawinski@jtendo.com>
-* Danila Fedyaschin <danilagamma@gmail.com>
-* gen_ale_drinker <michael.coles@gmail.com>
+* Andrzej Trawiński, <andrzej.trawinski@jtendo.com>
+* Danila Fedyaschin, <danilagamma@gmail.com>
+* gen_ale_drinker, <michael.coles@gmail.com>
+* Jean-Sébastien Pédron, <jean-sebastien.pedron@dumbbell.fr>
 
 ## How to contribute
 
